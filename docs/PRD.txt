@@ -1,0 +1,1309 @@
+Absolutely. For **AuthShield**, I’d make the PRD deliberately focused: a realistic security/IAM project that you can actually build, test, and defend in a Cyderes interview—not an over-engineered “mini enterprise SIEM.”
+
+# AuthShield — Product Requirements Document (PRD)
+
+**Version:** 1.0
+**Status:** Planned
+**Primary goal:** Demonstrate practical understanding of authentication, authorization, IAM, security monitoring, audit logging, and backend engineering.
+
+---
+
+## 1. Product Overview
+
+### Product Name
+
+**AuthShield**
+
+### Product Type
+
+Security-focused REST API and identity monitoring platform.
+
+### One-line description
+
+> **AuthShield is a security-focused backend that provides JWT authentication, role-based access control, audit logging, and rule-based detection of suspicious authentication and authorization activity.**
+
+### Problem
+
+Applications commonly implement authentication but have limited visibility into what happens **after and around authentication**.
+
+For example:
+
+* Who logged in?
+* Was the login successful?
+* Where did the request originate?
+* Who accessed a protected resource?
+* Who attempted an unauthorized action?
+* Did someone suddenly receive elevated privileges?
+* Are repeated failed logins occurring?
+* Was a disabled account attempting to authenticate?
+
+AuthShield combines **identity management and security monitoring** into one small, understandable system.
+
+---
+
+# 2. Goals
+
+## Primary Goals
+
+AuthShield should demonstrate the following capabilities:
+
+1. **User authentication**
+2. **JWT-based session/access control**
+3. **Authorization**
+4. **Role-Based Access Control (RBAC)**
+5. **Protected API resources**
+6. **Security audit logging**
+7. **IP/request monitoring**
+8. **Rule-based suspicious activity detection**
+9. **Security alert generation**
+10. **Security monitoring dashboard**
+11. **Automated security tests**
+
+---
+
+## Secondary Goals
+
+The project should demonstrate:
+
+* Clean Python architecture
+* REST API design
+* Database design
+* Secure password handling
+* Error handling
+* Logging
+* Testing
+* Git-based development
+* Security-oriented thinking
+* Technical documentation
+
+---
+
+# 3. Non-Goals
+
+This is important.
+
+AuthShield **will not** attempt to become:
+
+* A production enterprise IAM platform
+* A full SIEM
+* An EDR
+* A vulnerability scanner
+* An ML-based threat detection system
+* A penetration-testing framework
+* A cloud security platform
+* A zero-trust enterprise architecture
+* A replacement for Okta, Microsoft Entra ID, Splunk, etc.
+
+The objective is a **focused security engineering project**.
+
+---
+
+# 4. Target Users
+
+### 4.1 Normal User
+
+Can:
+
+* Register
+* Login
+* View own profile
+* Update permitted profile information
+* View their own activity where appropriate
+
+---
+
+### 4.2 Security Analyst
+
+Can:
+
+* View security alerts
+* Investigate suspicious activity
+* View audit events
+* Filter events
+* Examine source IPs
+* Review failed authentication activity
+
+---
+
+### 4.3 Administrator
+
+Can:
+
+* Manage users
+* Assign roles
+* Disable/enable accounts
+* View security events
+* Manage access permissions
+* Investigate alerts
+
+---
+
+# 5. Roles & Permissions
+
+AuthShield initially uses three roles.
+
+| Role      | Description                            |
+| --------- | -------------------------------------- |
+| `user`    | Regular application user               |
+| `analyst` | Security monitoring/investigation user |
+| `admin`   | System administrator                   |
+
+### Example permission model
+
+| Action               | User | Analyst | Admin |
+| -------------------- | ---: | ------: | ----: |
+| View own profile     |    ✅ |       ✅ |     ✅ |
+| Update own profile   |    ✅ |       ✅ |     ✅ |
+| View security alerts |    ❌ |       ✅ |     ✅ |
+| View audit logs      |    ❌ |       ✅ |     ✅ |
+| Investigate alerts   |    ❌ |       ✅ |     ✅ |
+| View users           |    ❌ | Limited |     ✅ |
+| Disable user         |    ❌ |       ❌ |     ✅ |
+| Change roles         |    ❌ |       ❌ |     ✅ |
+| Manage permissions   |    ❌ |       ❌ |     ✅ |
+
+The authorization layer should enforce these permissions **server-side**.
+
+The frontend should never be trusted to enforce access control.
+
+---
+
+# 6. Core Functional Requirements
+
+## FR-01 — User Registration
+
+The system shall allow a user to create an account.
+
+### Required information
+
+```text
+username
+email
+password
+```
+
+### Requirements
+
+* Email must be unique.
+* Username must be unique.
+* Password must never be stored in plaintext.
+* Password must be securely hashed.
+* New users receive the default `user` role.
+* Registration should generate an audit event.
+
+Example:
+
+```text
+USER_REGISTERED
+```
+
+---
+
+# 7. Authentication
+
+## FR-02 — Login
+
+Users shall authenticate using:
+
+```text
+email + password
+```
+
+On successful authentication:
+
+```text
+User
+ ↓
+Password verification
+ ↓
+Authentication successful
+ ↓
+JWT generated
+ ↓
+Client receives access token
+```
+
+The JWT should contain appropriate identity information such as:
+
+```text
+user_id
+role
+expiration
+```
+
+Do **not** put sensitive information such as passwords into the JWT.
+
+---
+
+## FR-03 — JWT Validation
+
+Protected endpoints must validate the JWT.
+
+Requests without a valid token should receive an appropriate authentication error.
+
+Examples:
+
+```text
+Missing token
+Expired token
+Malformed token
+Invalid signature
+```
+
+Each relevant event should be logged.
+
+---
+
+# 8. Authorization
+
+Authentication answers:
+
+> **Who are you?**
+
+Authorization answers:
+
+> **What are you allowed to do?**
+
+AuthShield must keep these concepts separate.
+
+Example:
+
+```text
+Authenticated User
+        ↓
+JWT validated
+        ↓
+User identity determined
+        ↓
+Role determined
+        ↓
+Permission checked
+        ↓
+Resource accessed
+```
+
+A valid JWT alone must **not** automatically provide administrative access.
+
+---
+
+# 9. RBAC
+
+## FR-04 — Role-Based Access Control
+
+The system shall restrict API operations according to the user's role.
+
+Example:
+
+```text
+GET /alerts
+```
+
+Allowed:
+
+```text
+analyst
+admin
+```
+
+Denied:
+
+```text
+user
+```
+
+The system should record unauthorized attempts.
+
+Example event:
+
+```text
+ACCESS_DENIED
+```
+
+---
+
+# 10. Protected Resources
+
+The API should contain several protected endpoints.
+
+### Example API
+
+```text
+POST /auth/register
+POST /auth/login
+
+GET /users/me
+PUT /users/me
+
+GET /alerts
+GET /alerts/{alert_id}
+
+GET /audit-logs
+
+GET /users
+PATCH /users/{user_id}/status
+PATCH /users/{user_id}/role
+```
+
+The exact endpoint structure can be refined during implementation.
+
+---
+
+# 11. Audit Logging
+
+This is one of the most important parts of AuthShield.
+
+The system should maintain a record of security-relevant activity.
+
+### Audit event fields
+
+```text
+id
+timestamp
+user_id
+ip_address
+action
+endpoint
+status
+details
+```
+
+Potential events:
+
+```text
+USER_REGISTERED
+LOGIN_SUCCESS
+LOGIN_FAILED
+LOGOUT
+ACCESS_GRANTED
+ACCESS_DENIED
+ROLE_CHANGED
+USER_DISABLED
+USER_ENABLED
+PASSWORD_CHANGED
+```
+
+Example:
+
+```text
+Timestamp: 2026-09-18 10:31:42
+User: 102
+IP: 192.168.1.20
+Action: LOGIN_FAILED
+Endpoint: /auth/login
+Status: FAILURE
+Details: Invalid password
+```
+
+---
+
+# 12. IP Monitoring
+
+AuthShield should record the source IP associated with security events.
+
+The goal isn't to perform advanced network forensics.
+
+Instead, IP information provides **context for security events**.
+
+For example:
+
+```text
+User: varun
+IP: 10.0.0.15
+LOGIN_FAILED
+
+User: varun
+IP: 10.0.0.15
+LOGIN_FAILED
+
+User: varun
+IP: 10.0.0.15
+LOGIN_FAILED
+```
+
+This information can then be consumed by the detection engine.
+
+### Important
+
+Development/testing should support simulated IP addresses so you can test detection without needing multiple physical devices.
+
+---
+
+# 13. Security Detection Engine
+
+This is where AuthShield becomes more than a normal authentication API.
+
+The detection engine analyzes security events and generates alerts when predefined rules are triggered.
+
+Initially, use **rule-based detection**, not machine learning.
+
+---
+
+## Detection Rule 1 — Brute Force
+
+### Condition
+
+If:
+
+```text
+5 failed login attempts
+FROM same IP
+WITHIN 5 minutes
+```
+
+generate:
+
+```text
+BRUTE_FORCE_LOGIN
+```
+
+Example:
+
+```text
+10:00 → Failed
+10:01 → Failed
+10:02 → Failed
+10:03 → Failed
+10:04 → Failed
+             ↓
+        🚨 ALERT
+```
+
+---
+
+# 14. Detection Rule 2 — Repeated Unauthorized Access
+
+If a user repeatedly attempts to access an endpoint they don't have permission to access:
+
+```text
+ACCESS_DENIED
+ACCESS_DENIED
+ACCESS_DENIED
+ACCESS_DENIED
+```
+
+the system can generate:
+
+```text
+REPEATED_UNAUTHORIZED_ACCESS
+```
+
+The exact threshold can be configurable.
+
+---
+
+# 15. Detection Rule 3 — Privilege Escalation
+
+If an administrator changes:
+
+```text
+user → admin
+```
+
+generate an audit event:
+
+```text
+ROLE_CHANGED
+```
+
+and optionally generate:
+
+```text
+PRIVILEGE_CHANGE
+```
+
+security alert.
+
+This is useful because unexpected role changes are security-sensitive events.
+
+---
+
+# 16. Detection Rule 4 — Disabled Account Login
+
+If an account is disabled:
+
+```text
+user.status = disabled
+```
+
+and someone attempts to log in:
+
+```text
+LOGIN_ATTEMPT_DISABLED_ACCOUNT
+```
+
+should be recorded.
+
+Depending on your implementation, this can generate a security alert.
+
+---
+
+# 17. Security Alerts
+
+Detected suspicious activity should produce an alert.
+
+### Alert fields
+
+```text
+id
+timestamp
+alert_type
+severity
+user_id
+source_ip
+description
+status
+```
+
+Example:
+
+```text
+Alert ID: 42
+Type: BRUTE_FORCE_LOGIN
+Severity: HIGH
+User: 17
+Source IP: 10.0.0.15
+Status: OPEN
+```
+
+---
+
+# 18. Alert Severity
+
+Initially:
+
+```text
+LOW
+MEDIUM
+HIGH
+CRITICAL
+```
+
+Example mapping:
+
+| Event                              | Severity |
+| ---------------------------------- | -------- |
+| Single failed login                | LOW      |
+| Repeated unauthorized access       | MEDIUM   |
+| Brute-force pattern                | HIGH     |
+| Suspicious privilege change        | HIGH     |
+| Disabled account repeated attempts | HIGH     |
+
+These are **project-defined rules**, not claims that these severities are universal industry standards.
+
+---
+
+# 19. Alert Management
+
+Analysts/admins should be able to:
+
+```text
+View alerts
+Filter alerts
+View alert details
+Change alert status
+```
+
+Alert statuses:
+
+```text
+OPEN
+INVESTIGATING
+RESOLVED
+FALSE_POSITIVE
+```
+
+Example workflow:
+
+```text
+Alert generated
+      ↓
+OPEN
+      ↓
+Analyst investigates
+      ↓
+INVESTIGATING
+      ↓
+      ├── Real incident → RESOLVED
+      │
+      └── False detection → FALSE_POSITIVE
+```
+
+---
+
+# 20. Dashboard
+
+Build a simple Streamlit dashboard.
+
+The dashboard does **not** need to look like a commercial SOC.
+
+It needs to communicate security information clearly.
+
+### Dashboard metrics
+
+```text
+Total Users
+Total Security Events
+Failed Logins
+Open Alerts
+High-Severity Alerts
+Disabled Accounts
+```
+
+### Example visualizations
+
+* Alerts by severity
+* Login success vs failure
+* Security events over time
+* Top source IPs
+* Recent alerts
+* Recent unauthorized access attempts
+
+---
+
+# 21. Backend Requirements
+
+### Recommended stack
+
+```text
+Python
+FastAPI
+PostgreSQL
+SQLAlchemy
+JWT
+Argon2/bcrypt
+pytest
+Streamlit
+Git/GitHub
+```
+
+Optional:
+
+```text
+Docker
+Docker Compose
+```
+
+You don't need Docker if it slows down the project significantly.
+
+---
+
+# 22. Database Design
+
+Initial entities:
+
+```text
+users
+roles
+permissions
+audit_logs
+security_alerts
+```
+
+Potential relationship:
+
+```text
+User
+ │
+ └── Role
+       │
+       └── Permissions
+
+User
+ │
+ ├── Audit Logs
+ │
+ └── Security Alerts
+```
+
+### Users
+
+```text
+id
+username
+email
+password_hash
+role_id
+status
+created_at
+updated_at
+```
+
+### Audit Logs
+
+```text
+id
+timestamp
+user_id
+ip_address
+action
+endpoint
+status
+details
+```
+
+### Security Alerts
+
+```text
+id
+timestamp
+alert_type
+severity
+user_id
+source_ip
+description
+status
+```
+
+---
+
+# 23. API Requirements
+
+Initial API specification:
+
+### Authentication
+
+```text
+POST /auth/register
+POST /auth/login
+```
+
+### User
+
+```text
+GET /users/me
+PUT /users/me
+```
+
+### Admin
+
+```text
+GET /users
+PATCH /users/{id}/role
+PATCH /users/{id}/status
+```
+
+### Security
+
+```text
+GET /audit-logs
+GET /alerts
+GET /alerts/{id}
+PATCH /alerts/{id}/status
+```
+
+You can add endpoints only when they solve an actual project requirement.
+
+---
+
+# 24. Security Requirements
+
+AuthShield itself should follow basic secure-development principles.
+
+### Passwords
+
+Never:
+
+```text
+password = "mypassword123"
+```
+
+stored in database.
+
+Instead:
+
+```text
+password
+   ↓
+secure hash
+   ↓
+password_hash
+```
+
+---
+
+### Authentication
+
+JWTs should:
+
+* Have an expiration time.
+* Be cryptographically signed.
+* Be validated on protected requests.
+* Not contain sensitive secrets.
+
+---
+
+### Authorization
+
+Never rely on:
+
+```text
+role="admin"
+```
+
+sent by the client.
+
+The server must determine the authenticated user's role from trusted server-side data.
+
+---
+
+### Input Validation
+
+FastAPI/Pydantic validation should be used for incoming data.
+
+---
+
+### Error Handling
+
+Avoid exposing unnecessary internal information.
+
+For example, don't return:
+
+```text
+PostgreSQL connection failed at /app/database/connection.py line 42...
+```
+
+to an ordinary API client.
+
+---
+
+# 25. Testing Requirements
+
+Testing is a major part of this project because it demonstrates that your security controls actually work.
+
+### Authentication tests
+
+Test:
+
+```text
+Valid registration
+Duplicate email
+Duplicate username
+Valid login
+Invalid password
+Invalid user
+Expired JWT
+Malformed JWT
+Missing JWT
+```
+
+### Authorization tests
+
+```text
+User accessing user endpoint → allowed
+
+User accessing admin endpoint → denied
+
+Analyst accessing alert endpoint → allowed
+
+Admin accessing admin endpoint → allowed
+```
+
+### Detection tests
+
+```text
+4 failed logins → no brute-force alert
+
+5 failed logins → brute-force alert
+
+Repeated unauthorized access → alert
+
+User → admin role change → privilege alert
+
+Disabled account login → security event
+```
+
+---
+
+# 26. Test Simulation
+
+You can simulate different security scenarios from a **single machine**.
+
+For example:
+
+```text
+Test Scenario A
+
+IP: 10.0.0.15
+
+Failed login × 5
+        ↓
+BRUTE_FORCE_LOGIN
+```
+
+Then:
+
+```text
+Test Scenario B
+
+IP: 10.0.0.20
+
+Failed login × 2
+        ↓
+No alert
+```
+
+And:
+
+```text
+Test Scenario C
+
+Normal User
+     ↓
+GET /admin/users
+     ↓
+403
+     ↓
+ACCESS_DENIED
+```
+
+This gives you a reproducible security-testing environment.
+
+---
+
+# 27. Project Architecture
+
+Recommended structure:
+
+```text
+AuthShield/
+│
+├── app/
+│   ├── main.py
+│   │
+│   ├── api/
+│   │   ├── auth.py
+│   │   ├── users.py
+│   │   ├── alerts.py
+│   │   └── audit.py
+│   │
+│   ├── auth/
+│   │   ├── jwt.py
+│   │   ├── password.py
+│   │   └── permissions.py
+│   │
+│   ├── models/
+│   │   ├── user.py
+│   │   ├── role.py
+│   │   ├── audit.py
+│   │   └── alert.py
+│   │
+│   ├── detection/
+│   │   ├── brute_force.py
+│   │   ├── unauthorized_access.py
+│   │   └── privilege_change.py
+│   │
+│   ├── database/
+│   │   └── connection.py
+│   │
+│   └── services/
+│       ├── audit_service.py
+│       └── alert_service.py
+│
+├── tests/
+│   ├── test_auth.py
+│   ├── test_authorization.py
+│   ├── test_detection.py
+│   └── test_alerts.py
+│
+├── dashboard/
+│   └── app.py
+│
+├── README.md
+├── requirements.txt
+└── .env.example
+```
+
+---
+
+# 28. User Flow
+
+### Normal Login
+
+```text
+User
+ ↓
+POST /auth/login
+ ↓
+Validate credentials
+ ↓
+Password verification
+ ↓
+Generate JWT
+ ↓
+LOGIN_SUCCESS audit event
+ ↓
+Return JWT
+```
+
+### Failed Login
+
+```text
+User
+ ↓
+POST /auth/login
+ ↓
+Invalid password
+ ↓
+LOGIN_FAILED
+ ↓
+Record IP
+ ↓
+Detection Engine
+ ↓
+Threshold reached?
+ ├── No → Continue
+ └── Yes → Generate Alert
+```
+
+### Protected Request
+
+```text
+Request
+ ↓
+JWT validation
+ ↓
+Authenticated?
+ ├── No → 401
+ └── Yes
+       ↓
+   Permission check
+       ↓
+   Authorized?
+    ├── No → 403 + audit event
+    └── Yes → Resource
+```
+
+---
+
+# 29. 30-Day Development Plan
+
+## Week 1 — Foundation
+
+### Days 1–2
+
+Study/revise:
+
+* Authentication
+* Authorization
+* JWT
+* RBAC
+* Least privilege
+* Password hashing
+
+### Days 3–4
+
+Set up:
+
+```text
+FastAPI
+PostgreSQL
+SQLAlchemy
+Project structure
+```
+
+### Days 5–7
+
+Implement:
+
+```text
+User registration
+Password hashing
+Login
+JWT generation
+JWT validation
+```
+
+---
+
+# Week 2 — IAM
+
+### Days 8–10
+
+Implement:
+
+```text
+Roles
+Permissions
+RBAC
+Protected endpoints
+```
+
+### Days 11–12
+
+Implement:
+
+```text
+Admin user management
+Enable/disable users
+Role changes
+```
+
+### Days 13–14
+
+Write:
+
+```text
+Authentication tests
+Authorization tests
+RBAC tests
+```
+
+---
+
+# Week 3 — Security Monitoring
+
+### Days 15–17
+
+Implement:
+
+```text
+Audit logging
+IP tracking
+Security events
+```
+
+### Days 18–20
+
+Implement:
+
+```text
+Brute-force detection
+Unauthorized-access detection
+Privilege-change detection
+Disabled-account detection
+```
+
+### Days 21
+
+Implement:
+
+```text
+Security alerts
+Alert statuses
+```
+
+---
+
+# Week 4 — Dashboard + Polish
+
+### Days 22–24
+
+Build:
+
+```text
+Streamlit dashboard
+```
+
+### Days 25–26
+
+Add:
+
+```text
+Charts
+Filters
+Recent alerts
+Security metrics
+```
+
+### Days 27–28
+
+Complete:
+
+```text
+pytest coverage
+Edge cases
+Security testing
+```
+
+### Days 29–30
+
+Finish:
+
+```text
+README
+Architecture diagram
+API documentation
+Screenshots
+Demo scenarios
+GitHub cleanup
+Resume bullets
+```
+
+---
+
+# 30. Definition of Done
+
+AuthShield is considered complete when you can demonstrate this entire scenario:
+
+```text
+                    AuthShield
+                        │
+                User registers
+                        ↓
+                   User logs in
+                        ↓
+                    JWT issued
+                        ↓
+              Access protected API
+                        ↓
+                Authorization check
+                        ↓
+                 Audit event
+                        ↓
+              Multiple failed logins
+                        ↓
+                Detection engine
+                        ↓
+              Brute-force detected
+                        ↓
+                 Security alert
+                        ↓
+                 Analyst dashboard
+                        ↓
+                  Investigation
+```
+
+And you can run automated tests proving that each major security control works.
+
+---
+
+
+## The core principle
+
+**Don't try to make AuthShield huge. Make it defensible.**
+
+If an interviewer asks:
+
+> "How does your brute-force detection work?"
+
+You should be able to open the code and explain it.
+
+If they ask:
+
+> "What's the difference between authentication and authorization?"
+
+You should be able to explain it immediately.
+
+If they ask:
+
+> "Why did you use RBAC?"
+
+You should have a clear answer.
+
+If they ask:
+
+> "How did you test multiple IP addresses?"
+
+You should be able to show the automated simulation.
+
+If they ask:
+
+> "What happens when a normal user calls an admin endpoint?"
+
+You should be able to demonstrate:
+
+```text
+JWT → identity → role → permission → DENIED → audit log
+```
+
+**That's the level of project I would target for your Cyderes application.**
