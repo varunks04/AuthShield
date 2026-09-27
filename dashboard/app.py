@@ -52,10 +52,30 @@ from app.detection.engine import DetectionEngine
 # -----------------------------------------------------------------------------
 st.set_page_config(
     page_title="AuthShield — SOC Threat & IAM Intelligence",
-    page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# -----------------------------------------------------------------------------
+# Minimalist Cybersecurity SVG Icons (Zero Emojis)
+# -----------------------------------------------------------------------------
+SVG_ICONS = {
+    "shield": '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; display: inline-block; margin-right: 6px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+    "alert": '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; display: inline-block; margin-right: 6px;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+    "activity": '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; display: inline-block; margin-right: 6px;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
+    "lock": '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; display: inline-block; margin-right: 6px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+    "unlock": '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; display: inline-block; margin-right: 6px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>',
+    "user": '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; display: inline-block; margin-right: 6px;"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    "terminal": '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; display: inline-block; margin-right: 6px;"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>',
+    "file": '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; display: inline-block; margin-right: 6px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+    "search": '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; display: inline-block; margin-right: 6px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+    "slash": '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; display: inline-block; margin-right: 6px;"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>',
+    "crosshair": '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; display: inline-block; margin-right: 6px;"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>',
+    "check": '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; display: inline-block; margin-right: 6px;"><polyline points="20 6 9 17 4 12"/></svg>',
+    "refresh": '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; display: inline-block; margin-right: 6px;"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>',
+    "chart": '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; display: inline-block; margin-right: 6px;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
+    "info": '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; display: inline-block; margin-right: 6px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+}
 
 # -----------------------------------------------------------------------------
 # Bespoke Enterprise CSS Theme (Cybersecurity SOC Dark/Slate Palette)
@@ -352,7 +372,7 @@ def handle_block_ip_action(ip_address: str, reason: str = "Manually blocked by s
     db_conn = get_db_session()
     try:
         BlocklistService.block_ip(db_conn, clean_ip, reason=reason, blocked_by="analyst@authshield.io")
-        st.session_state.flash_message = f"🚫 Source IP '{clean_ip}' has been actively quarantined! All subsequent connections will be rejected (403)."
+        st.session_state.flash_message = f"Source IP '{clean_ip}' has been actively quarantined. All subsequent connections will be rejected (HTTP 403)."
         st.session_state.flash_type = "warning"
     finally:
         db_conn.close()
@@ -364,7 +384,7 @@ def handle_unblock_ip_action(ip_address: str):
     db_conn = get_db_session()
     try:
         BlocklistService.unblock_ip(db_conn, clean_ip, unblocked_by="analyst@authshield.io")
-        st.session_state.flash_message = f"🔓 IP '{clean_ip}' has been released from active quarantine."
+        st.session_state.flash_message = f"Source IP '{clean_ip}' has been released from active quarantine."
         st.session_state.flash_type = "success"
     finally:
         db_conn.close()
@@ -386,7 +406,7 @@ def handle_quarantine_user_action(user_id: int):
                 ip_address="127.0.0.1",
                 details=f"Account '{u.username}' (ID: {u.id}) manually quarantined by analyst"
             )
-            st.session_state.flash_message = f"🔒 User account '{u.username}' has been quarantined and disabled."
+            st.session_state.flash_message = f"User account '{u.username}' (ID: {u.id}) has been quarantined and disabled."
             st.session_state.flash_type = "warning"
     finally:
         db_conn.close()
@@ -408,7 +428,7 @@ def handle_restore_user_action(user_id: int):
                 ip_address="127.0.0.1",
                 details=f"Account '{u.username}' (ID: {u.id}) restored and re-enabled by analyst"
             )
-            st.session_state.flash_message = f"✅ User account '{u.username}' has been restored and activated."
+            st.session_state.flash_message = f"User account '{u.username}' (ID: {u.id}) has been restored and activated."
             st.session_state.flash_type = "success"
     finally:
         db_conn.close()
@@ -488,16 +508,16 @@ try:
     # Dynamic Threat Level
     if critical_alerts_count > 0:
         threat_level_class = "threat-defcon1"
-        threat_level_text = "🚨 DEFCON 1: CRITICAL THREAT"
+        threat_level_text = "DEFCON 1: CRITICAL THREAT"
     elif high_alerts_count > 0 or open_alerts_count >= 5:
         threat_level_class = "threat-defcon2"
-        threat_level_text = "⚠️ DEFCON 2: ELEVATED RISK"
+        threat_level_text = "DEFCON 2: ELEVATED RISK"
     elif open_alerts_count > 0 or investigating_alerts_count > 0:
         threat_level_class = "threat-defcon3"
-        threat_level_text = "🟡 DEFCON 3: GUARDED"
+        threat_level_text = "DEFCON 3: GUARDED"
     else:
         threat_level_class = "threat-normal"
-        threat_level_text = "🟢 DEFCON 5: NORMAL"
+        threat_level_text = "DEFCON 5: NORMAL"
 finally:
     db.close()
 
@@ -522,6 +542,34 @@ st.markdown(f"""
     </div>
 </div>
 """, unsafe_allow_html=True)
+
+# Interactive Flow & Operational Lifecycle Guide for New Users
+with st.expander("System Architecture & Operational Workflow Guide (New User Onboarding)", expanded=False):
+    st.markdown(f"""
+    <div style="font-size: 0.85rem; color: #94a3b8; line-height: 1.6;">
+        <p style="color: #f8fafc; font-weight: 600; margin-bottom: 0.75rem;">
+            AuthShield protects enterprise IAM via an orchestrated 4-stage operational lifecycle:
+        </p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.75rem;">
+            <div style="background: #060709; border: 1px solid #161c28; border-top: 2px solid #0284c7; padding: 0.75rem 0.85rem; border-radius: 4px;">
+                <div style="color: #38bdf8; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 700;">STAGE 1: ATTACK SIMULATION</div>
+                <div style="color: #94a3b8; font-size: 0.75rem; margin-top: 4px;">Generate corporate authentication traffic or launch targeted cyber attacks (Brute Force, Privilege Escalation, Probing) in the <b>Attack Simulation Lab</b>.</div>
+            </div>
+            <div style="background: #060709; border: 1px solid #161c28; border-top: 2px solid #f59e0b; padding: 0.75rem 0.85rem; border-radius: 4px;">
+                <div style="color: #fcd34d; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 700;">STAGE 2: HEURISTIC DETECTION</div>
+                <div style="color: #94a3b8; font-size: 0.75rem; margin-top: 4px;">Sliding-window algorithms continuously evaluate event streams to distinguish benign typos from distributed attack bursts without false positives.</div>
+            </div>
+            <div style="background: #060709; border: 1px solid #161c28; border-top: 2px solid #ef4444; padding: 0.75rem 0.85rem; border-radius: 4px;">
+                <div style="color: #fca5a5; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 700;">STAGE 3: INCIDENT TRIAGE</div>
+                <div style="color: #94a3b8; font-size: 0.75rem; margin-top: 4px;">Investigate triggered threats in <b>Security Alerts Triage</b>. Review forensic evidence, evaluate blast radius, and update triage status.</div>
+            </div>
+            <div style="background: #060709; border: 1px solid #161c28; border-top: 2px solid #10b981; padding: 0.75rem 0.85rem; border-radius: 4px;">
+                <div style="color: #6ee7b7; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 700;">STAGE 4: ACTIVE CONTAINMENT</div>
+                <div style="color: #94a3b8; font-size: 0.75rem; margin-top: 4px;">Enforce zero-trust defenses in <b>Active Defense & Remediation</b>: quarantine malicious IPs on the network denylist and suspend compromised user accounts.</div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # Display persistent flash notification if present
 if st.session_state.flash_message:
@@ -549,42 +597,42 @@ with st.sidebar:
     active_tab = st.radio(
         "Console Navigation",
         [
-            "📊 Dashboard Overview",
-            "🚨 Security Alerts Triage",
-            "⚔️ Active Defense & Remediation",
-            "📜 Audit Log Explorer",
-            "⚡ Attack Simulation Lab"
+            "Dashboard Overview",
+            "Security Alerts Triage",
+            "Active Defense & Remediation",
+            "Audit Log Explorer",
+            "Attack Simulation Lab"
         ],
         label_visibility="collapsed"
     )
 
     st.markdown("---")
-    st.markdown("#### 👤 Operator Context")
+    st.markdown("#### Operator Context")
     st.markdown("""
     <div style="background: #090c12; border: 1px solid #161c28; border-radius: 4px; padding: 0.75rem; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace;">
         <div style="color: #64748b; font-size: 0.68rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">OPERATOR IDENTITY</div>
         <div style="color: #f8fafc; font-weight: 600; margin-top: 2px; font-size: 0.85rem;">analyst@authshield.io</div>
-        <div style="color: #10b981; font-size: 0.72rem; margin-top: 4px;">● ACCESS: SOC_ANALYST (TIER 2)</div>
+        <div style="color: #10b981; font-size: 0.72rem; margin-top: 4px;">ACCESS: SOC_ANALYST (TIER 2)</div>
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("#### ⚙️ Containment Telemetry")
+    st.markdown("#### Containment Telemetry")
     col_s1, col_s2 = st.columns(2)
     col_s1.metric("Quarantined IPs", f"{active_blocked_ips_count}")
     col_s2.metric("Blocked Drops", f"{blocked_attempts_count}")
 
-    st.markdown("#### 🔄 Live Automation")
-    traffic_toggle = st.toggle("🔁 Real-World Logins Stream (Every 10s)", value=st.session_state.auto_traffic_enabled)
+    st.markdown("#### Live Automation")
+    traffic_toggle = st.toggle("Real-World Logins Stream (Every 10s)", value=st.session_state.auto_traffic_enabled)
     if traffic_toggle != st.session_state.auto_traffic_enabled:
         st.session_state.auto_traffic_enabled = traffic_toggle
         st.session_state.last_traffic_time = time.time()
         st.rerun()
 
-    if st.button("🔄 Refresh Telemetry", use_container_width=True):
+    if st.button("Refresh Telemetry", use_container_width=True):
         st.rerun()
 
     st.markdown("---")
-    st.markdown("#### 🔗 Quick References")
+    st.markdown("#### Quick References")
     st.markdown("""
     - [FastAPI Swagger UI](http://127.0.0.1:8000/docs)
     - [ReDoc Documentation](http://127.0.0.1:8000/redoc)
@@ -595,7 +643,7 @@ with st.sidebar:
 # =============================================================================
 # TAB 1: DASHBOARD OVERVIEW
 # =============================================================================
-if active_tab == "📊 Dashboard Overview":
+if active_tab == "Dashboard Overview":
     # 4 Hero KPI Cards
     col1, col2, col3, col4 = st.columns(4)
 
@@ -605,7 +653,7 @@ if active_tab == "📊 Dashboard Overview":
         <div class="kpi-card kpi-accent-blue">
             <div class="kpi-label">
                 <span>Total Security Events</span>
-                <span>📈</span>
+                <span>{SVG_ICONS['activity']}</span>
             </div>
             <div class="kpi-value">{total_events_count:,}</div>
             <div class="kpi-caption">Audit entries tracked in system</div>
@@ -621,7 +669,7 @@ if active_tab == "📊 Dashboard Overview":
         <div class="kpi-card {accent_color}">
             <div class="kpi-label">
                 <span>Failed Auth Ratio</span>
-                <span>🔐</span>
+                <span>{SVG_ICONS['lock']}</span>
             </div>
             <div class="kpi-value">{fail_pct}%</div>
             <div class="kpi-caption">{failed_logins_count} failed of {total_attempts} login events</div>
@@ -636,7 +684,7 @@ if active_tab == "📊 Dashboard Overview":
         <div class="kpi-card {accent_color}">
             <div class="kpi-label">
                 <span>Open Security Alerts</span>
-                <span>🚨</span>
+                <span>{SVG_ICONS['alert']}</span>
             </div>
             <div class="kpi-value">{total_open}</div>
             <div class="kpi-caption">{open_alerts_count} Open • {investigating_alerts_count} Investigating</div>
@@ -650,7 +698,7 @@ if active_tab == "📊 Dashboard Overview":
         <div class="kpi-card {contain_accent}">
             <div class="kpi-label">
                 <span>Active Quarantine</span>
-                <span>🚫</span>
+                <span>{SVG_ICONS['slash']}</span>
             </div>
             <div class="kpi-value">{active_blocked_ips_count} IPs</div>
             <div class="kpi-caption">{disabled_users_count} disabled users • {blocked_attempts_count} drops</div>
@@ -666,7 +714,7 @@ if active_tab == "📊 Dashboard Overview":
     try:
         # Chart 1: Alerts by Severity with Altair
         with chart_col1:
-            st.markdown('<div class="soc-section-title">🚨 Threat Alert Severity Distribution</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="soc-section-title">{SVG_ICONS["alert"]} Threat Alert Severity Distribution</div>', unsafe_allow_html=True)
             severity_counts = (
                 db.query(SecurityAlert.severity, func.count(SecurityAlert.id))
                 .group_by(SecurityAlert.severity)
@@ -697,7 +745,7 @@ if active_tab == "📊 Dashboard Overview":
 
         # Chart 2: Authentication Dynamics
         with chart_col2:
-            st.markdown('<div class="soc-section-title">🔐 Authentication Event Dynamics</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="soc-section-title">{SVG_ICONS["lock"]} Authentication Event Dynamics</div>', unsafe_allow_html=True)
             auth_events = (
                 db.query(AuditLog.action, func.count(AuditLog.id))
                 .filter(AuditLog.action.in_(["LOGIN_SUCCESS", "LOGIN_FAILED", "LOGIN_ATTEMPT_DISABLED_ACCOUNT", "BLOCKED_IP_REJECTED"]))
@@ -740,7 +788,7 @@ if active_tab == "📊 Dashboard Overview":
 
         # Top Source IPs Table with Quick Action
         with col_threat1:
-            st.markdown('<div class="soc-section-title">🌐 Top Suspicious Source IPs & Activity</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="soc-section-title">{SVG_ICONS["crosshair"]} Top Suspicious Source IPs & Activity</div>', unsafe_allow_html=True)
             top_ips = (
                 db.query(
                     AuditLog.ip_address,
@@ -761,7 +809,7 @@ if active_tab == "📊 Dashboard Overview":
 
                     ip_rows.append({
                         "Source IP": ip or "127.0.0.1",
-                        "Quarantined": "🚫 YES" if is_blk else "🟢 No",
+                        "Quarantined": "YES (Active)" if is_blk else "No",
                         "Risk": risk,
                         "Total Events": total,
                         "Failed Logins": failed or 0,
@@ -781,13 +829,13 @@ if active_tab == "📊 Dashboard Overview":
                         )
                     }
                 )
-                st.caption("ℹ️ To inspect or quarantine suspicious IPs, use the **⚔️ Active Defense & Remediation** tab or **🚨 Alerts Triage**.")
+                st.caption("To inspect or quarantine suspicious IPs, use the Active Defense & Remediation tab or Alerts Triage.")
             else:
                 st.info("No source IP telemetry recorded.")
 
         # Recent Access Denials & Unauthorized Attempts
         with col_threat2:
-            st.markdown('<div class="soc-section-title">🚫 Recent Access Denied & Quarantined Incidents</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="soc-section-title">{SVG_ICONS["slash"]} Recent Access Denied & Quarantined Incidents</div>', unsafe_allow_html=True)
             denied_logs = (
                 db.query(AuditLog.timestamp, AuditLog.ip_address, AuditLog.endpoint, AuditLog.action, AuditLog.details)
                 .filter(AuditLog.action.in_(["ACCESS_DENIED", "LOGIN_ATTEMPT_DISABLED_ACCOUNT", "BLOCKED_IP_REJECTED"]))
@@ -815,8 +863,8 @@ if active_tab == "📊 Dashboard Overview":
 # =============================================================================
 # TAB 2: SECURITY ALERTS TRIAGE QUEUE (WITH DIRECT REMEDIATION ACTIONS)
 # =============================================================================
-elif active_tab == "🚨 Security Alerts Triage":
-    st.markdown('<div class="soc-section-title">🚨 Security Incident Investigation & Triage Queue</div>', unsafe_allow_html=True)
+elif active_tab == "Security Alerts Triage":
+    st.markdown(f'<div class="soc-section-title">{SVG_ICONS["alert"]} Security Incident Investigation & Triage Queue</div>', unsafe_allow_html=True)
     st.caption("Investigate triggered threat rules, analyze forensic evidence, and execute manual containment actions.")
 
     db = get_db_session()
@@ -824,7 +872,7 @@ elif active_tab == "🚨 Security Alerts Triage":
         # Search & Filter Toolbar
         fcol1, fcol2, fcol3 = st.columns([2, 1, 1])
         with fcol1:
-            search_query = st.text_input("🔍 Search alerts (by IP, Alert Type, or Description)", placeholder="e.g. 10.0.0.15, BRUTE_FORCE, admin...")
+            search_query = st.text_input("Search alerts (by IP, Alert Type, or Description)", placeholder="e.g. 10.0.0.15, BRUTE_FORCE, admin...")
         with fcol2:
             status_filter = st.selectbox("Status", ["ALL", "OPEN", "INVESTIGATING", "RESOLVED", "FALSE_POSITIVE"])
         with fcol3:
@@ -833,9 +881,9 @@ elif active_tab == "🚨 Security Alerts Triage":
         # View Mode Toggle & Bulk Actions
         b_col_view, b_col_act1, b_col_act2 = st.columns([2, 1, 1])
         with b_col_view:
-            view_mode = st.radio("Display Mode", ["📋 Interactive Incident Cards", "📊 Compact Data Table"], horizontal=True, label_visibility="collapsed")
+            view_mode = st.radio("Display Mode", ["Interactive Incident Cards", "Compact Data Table"], horizontal=True, label_visibility="collapsed")
         with b_col_act1:
-            if st.button("✅ Resolve All Open", use_container_width=True):
+            if st.button("Resolve All Open", use_container_width=True):
                 open_items = db.query(SecurityAlert).filter(SecurityAlert.status == "OPEN").all()
                 for item in open_items:
                     item.status = "RESOLVED"
@@ -843,7 +891,7 @@ elif active_tab == "🚨 Security Alerts Triage":
                 st.session_state.flash_message = f"Resolved {len(open_items)} open alerts."
                 st.rerun()
         with b_col_act2:
-            if st.button("🧹 Dismiss False Positives", use_container_width=True):
+            if st.button("Dismiss False Positives", use_container_width=True):
                 db.query(SecurityAlert).filter(SecurityAlert.status == "FALSE_POSITIVE").delete()
                 db.commit()
                 st.session_state.flash_message = "Dismissed all false-positive alerts."
@@ -871,7 +919,7 @@ elif active_tab == "🚨 Security Alerts Triage":
             st.info("No security alerts matching the selected filters.")
         else:
             # Clean Incident Action Center (Unified Action Controls - No Button per Row)
-            with st.expander("⚡ Incident Action Center (Triage & Containment)", expanded=True):
+            with st.expander("Incident Action Center (Triage & Containment)", expanded=True):
                 act_col1, act_col2, act_col3 = st.columns([2.5, 2, 1])
 
                 alert_map = {
@@ -885,10 +933,10 @@ elif active_tab == "🚨 Security Alerts Triage":
 
                 # Dynamic logical action options
                 action_options = [
-                    "🔎 Mark as INVESTIGATING",
-                    "✅ Mark as RESOLVED",
-                    "❌ Mark as FALSE POSITIVE",
-                    "🔄 Re-Open Incident (OPEN)"
+                    "Mark as INVESTIGATING",
+                    "Mark as RESOLVED",
+                    "Mark as FALSE POSITIVE",
+                    "Re-Open Incident (OPEN)"
                 ]
 
                 sel_is_ip_blocked = BlocklistService.is_ip_blocked(db, sel_alert.source_ip) if sel_alert.source_ip else False
@@ -897,15 +945,15 @@ elif active_tab == "🚨 Security Alerts Triage":
 
                 if sel_alert.source_ip:
                     if sel_is_ip_blocked:
-                        action_options.append(f"🔓 Unblock IP ({sel_alert.source_ip})")
+                        action_options.append(f"Unblock IP ({sel_alert.source_ip})")
                     else:
-                        action_options.append(f"🚫 Quarantine IP ({sel_alert.source_ip})")
+                        action_options.append(f"Quarantine IP ({sel_alert.source_ip})")
 
                 if sel_u:
                     if sel_u_disabled:
-                        action_options.append(f"🔓 Restore Account ({sel_u.username})")
+                        action_options.append(f"Restore Account ({sel_u.username})")
                     else:
-                        action_options.append(f"🔒 Quarantine Account ({sel_u.username})")
+                        action_options.append(f"Quarantine Account ({sel_u.username})")
 
                 with act_col2:
                     sel_action = st.selectbox("Action to Execute", action_options, key="sel_triage_action")
@@ -933,7 +981,7 @@ elif active_tab == "🚨 Security Alerts Triage":
 
             st.markdown("<div style='height: 0.5rem;'></div>", unsafe_allow_html=True)
 
-            if view_mode == "📋 Interactive Incident Cards":
+            if view_mode == "Interactive Incident Cards":
                 # Render Clean Native Streamlit Cards (Guaranteed Flawless UI Rendering)
                 for a in alerts:
                     time_str = a.timestamp.strftime("%Y-%m-%d %H:%M:%S UTC")
@@ -951,20 +999,20 @@ elif active_tab == "🚨 Security Alerts Triage":
                             status_pill = f"`{a.status}`"
                             badges_line = f"{sev_pill} {status_pill}"
                             if is_ip_blocked:
-                                badges_line += " :red[**[🚫 IP QUARANTINED]**]"
+                                badges_line += " :red[**[IP QUARANTINED]**]"
                             if is_user_disabled:
-                                badges_line += " :orange[**[🔒 ACCOUNT DISABLED]**]"
+                                badges_line += " :orange[**[ACCOUNT DISABLED]**]"
                             st.markdown(badges_line)
 
                         # Metadata row
                         mcol1, mcol2, mcol3 = st.columns(3)
-                        mcol1.caption(f"🕒 **Detected:** `{time_str}`")
-                        mcol2.caption(f"🌐 **Source IP:** `{a.source_ip or 'N/A'}`")
+                        mcol1.caption(f"Detected: `{time_str}`")
+                        mcol2.caption(f"Source IP: `{a.source_ip or 'N/A'}`")
                         target_name = f"`{target_user.username}` (ID: {a.user_id})" if target_user else (f"`ID: {a.user_id}`" if a.user_id is not None else "`N/A`")
-                        mcol3.caption(f"👤 **Target Subject:** {target_name}")
+                        mcol3.caption(f"Target Subject: {target_name}")
 
                         # Forensic Evidence box
-                        st.info(f"**Forensic Evidence:** {a.description or 'No additional details logged.'}", icon="🔍")
+                        st.info(f"**Forensic Evidence:** {a.description or 'No additional details logged.'}")
 
             else:
                 # Compact Data Table View with Export
@@ -987,7 +1035,7 @@ elif active_tab == "🚨 Security Alerts Triage":
 
                 csv_data = df_alerts.to_csv(index=False).encode('utf-8')
                 st.download_button(
-                    label="📥 Export Filtered Alerts (CSV)",
+                    label="Export Filtered Alerts (CSV)",
                     data=csv_data,
                     file_name=f"authshield_alerts_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
                     mime="text/csv"
@@ -1000,8 +1048,8 @@ elif active_tab == "🚨 Security Alerts Triage":
 # =============================================================================
 # TAB 3: ACTIVE DEFENSE & REMEDIATION CONSOLE
 # =============================================================================
-elif active_tab == "⚔️ Active Defense & Remediation":
-    st.markdown('<div class="soc-section-title">⚔️ Threat Remediation & Active Defense Center</div>', unsafe_allow_html=True)
+elif active_tab == "Active Defense & Remediation":
+    st.markdown(f'<div class="soc-section-title">{SVG_ICONS["shield"]} Threat Remediation & Active Defense Center</div>', unsafe_allow_html=True)
     st.caption("Perform manual threat containment: inspect suspicious IPs, manage the active network denylist, and quarantine compromised user accounts.")
 
     db = get_db_session()
@@ -1013,10 +1061,10 @@ elif active_tab == "⚔️ Active Defense & Remediation":
             <div class="kpi-card kpi-accent-red">
                 <div class="kpi-label">
                     <span>Actively Quarantined IPs</span>
-                    <span>🚫</span>
+                    <span>{SVG_ICONS['slash']}</span>
                 </div>
                 <div class="kpi-value">{active_blocked_ips_count}</div>
-                <div class="kpi-caption">Connections rejected with 403 Forbidden</div>
+                <div class="kpi-caption">Connections rejected with HTTP 403 Forbidden</div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -1025,7 +1073,7 @@ elif active_tab == "⚔️ Active Defense & Remediation":
             <div class="kpi-card kpi-accent-orange">
                 <div class="kpi-label">
                     <span>Disabled / Quarantined Users</span>
-                    <span>🔒</span>
+                    <span>{SVG_ICONS['lock']}</span>
                 </div>
                 <div class="kpi-value">{disabled_users_count}</div>
                 <div class="kpi-caption">Accounts restricted from authentication</div>
@@ -1037,7 +1085,7 @@ elif active_tab == "⚔️ Active Defense & Remediation":
             <div class="kpi-card kpi-accent-purple">
                 <div class="kpi-label">
                     <span>Blocked Attack Drops</span>
-                    <span>🛡️</span>
+                    <span>{SVG_ICONS['shield']}</span>
                 </div>
                 <div class="kpi-value">{blocked_attempts_count}</div>
                 <div class="kpi-caption">BLOCKED_IP_REJECTED events recorded</div>
@@ -1049,7 +1097,7 @@ elif active_tab == "⚔️ Active Defense & Remediation":
         # -------------------------------------------------------------
         # Section 1: Forensic IP Inspector & Immediate Containment
         # -------------------------------------------------------------
-        st.markdown('<div class="soc-section-title">🔍 Forensic IP Dossier & Manual Containment</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="soc-section-title">{SVG_ICONS["search"]} Forensic IP Dossier & Manual Containment</div>', unsafe_allow_html=True)
         st.write("Notice an IP in alerts or logs? Enter it below to inspect its full security footprint and block or unblock it with one click.")
 
         ip_input_col, ip_btn_col = st.columns([3, 1])
@@ -1061,7 +1109,7 @@ elif active_tab == "⚔️ Active Defense & Remediation":
                 label_visibility="collapsed"
             )
         with ip_btn_col:
-            if st.button("🔎 Inspect IP Footprint", use_container_width=True):
+            if st.button("Inspect IP Footprint", use_container_width=True):
                 st.session_state.inspected_ip = lookup_ip.strip()
                 st.rerun()
 
@@ -1074,10 +1122,10 @@ elif active_tab == "⚔️ Active Defense & Remediation":
             ip_denials = db.query(func.count(AuditLog.id)).filter(AuditLog.ip_address == target_ip, AuditLog.action == "ACCESS_DENIED").scalar() or 0
             ip_alerts = db.query(SecurityAlert).filter(SecurityAlert.source_ip == target_ip).all()
 
-            status_pill = '<span class="badge" style="background: rgba(239, 68, 68, 0.25); color: #f87171; border: 1px solid #ef4444; font-size: 0.85rem;">🚫 ACTIVELY BLOCKED</span>' if is_currently_blocked else '<span class="badge" style="background: rgba(16, 185, 129, 0.25); color: #34d399; border: 1px solid #10b981; font-size: 0.85rem;">🟢 ALLOWED / UNRESTRICTED</span>'
+            status_pill = '<span class="badge" style="background: rgba(239, 68, 68, 0.25); color: #f87171; border: 1px solid #ef4444; font-size: 0.85rem;">ACTIVELY BLOCKED</span>' if is_currently_blocked else '<span class="badge" style="background: rgba(16, 185, 129, 0.25); color: #34d399; border: 1px solid #10b981; font-size: 0.85rem;">ALLOWED / UNRESTRICTED</span>'
 
             st.markdown(f"""
-            <div class="ip-dossier-card">
+            <div class="kpi-card" style="margin-bottom: 1rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
                     <div>
                         <span style="font-size: 1.25rem; font-weight: 700; color: #f8fafc; font-family: 'JetBrains Mono';">IP: {target_ip}</span>
@@ -1098,7 +1146,7 @@ elif active_tab == "⚔️ Active Defense & Remediation":
             with d_act1:
                 if is_currently_blocked:
                     st.button(
-                        f"🔓 Release IP {target_ip} from Blocklist",
+                        f"Release IP {target_ip} from Blocklist",
                         key="btn_dossier_unblock",
                         on_click=handle_unblock_ip_action,
                         args=(target_ip,),
@@ -1107,7 +1155,7 @@ elif active_tab == "⚔️ Active Defense & Remediation":
                 else:
                     block_reason = st.text_input("Reason for Block", value="Observed malicious threat activity", key="input_block_reason")
                     st.button(
-                        f"🚫 Manually Block IP {target_ip}",
+                        f"Manually Block IP {target_ip}",
                         key="btn_dossier_block",
                         on_click=handle_block_ip_action,
                         args=(target_ip, block_reason),
@@ -1126,7 +1174,7 @@ elif active_tab == "⚔️ Active Defense & Remediation":
         # -------------------------------------------------------------
         # Section 2: Active IP Denylist Manager
         # -------------------------------------------------------------
-        st.markdown('<div class="soc-section-title">🚫 Active Network Denylist (Quarantined IPs)</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="soc-section-title">{SVG_ICONS["slash"]} Active Network Denylist (Quarantined IPs)</div>', unsafe_allow_html=True)
 
         blocked_records = BlocklistService.get_all_blocked(db)
         if blocked_records:
@@ -1140,7 +1188,7 @@ elif active_tab == "⚔️ Active Defense & Remediation":
                 })
             st.dataframe(pd.DataFrame(blk_table_data), use_container_width=True, hide_index=True)
 
-            # Single Unblock Selector (No button per row!)
+            # Single Unblock Selector (No button per row)
             u_col1, u_col2 = st.columns([3, 1])
             with u_col1:
                 ip_to_unblock = st.selectbox(
@@ -1150,18 +1198,18 @@ elif active_tab == "⚔️ Active Defense & Remediation":
                     label_visibility="collapsed"
                 )
             with u_col2:
-                if st.button("🔓 Release Selected IP", use_container_width=True):
+                if st.button("Release Selected IP", use_container_width=True):
                     handle_unblock_ip_action(ip_to_unblock)
                     st.rerun()
         else:
             st.info("No IP addresses are currently quarantined. All legitimate traffic is allowed.")
 
         # Manual Block Submission Form
-        with st.expander("➕ Manually Add New IP to Denylist"):
+        with st.expander("Manually Add New IP to Denylist"):
             with st.form("manual_block_form"):
                 new_block_ip = st.text_input("IP Address to Block (e.g. 198.51.100.25)")
                 new_block_reason = st.text_input("Justification / Incident Reference", value="Manual containment order by SOC lead")
-                submit_block = st.form_submit_button("🚫 Enforce Manual Block")
+                submit_block = st.form_submit_button("Enforce Manual Block")
                 if submit_block and new_block_ip:
                     BlocklistService.block_ip(db, new_block_ip.strip(), reason=new_block_reason, blocked_by="analyst@authshield.io")
                     st.session_state.flash_message = f"IP '{new_block_ip.strip()}' has been quarantined on active denylist."
@@ -1171,64 +1219,71 @@ elif active_tab == "⚔️ Active Defense & Remediation":
         st.markdown("---")
 
         # -------------------------------------------------------------
-        # Section 3: Compromised Account Quarantine & Lockouts
+        # Section 3: Compromised Account Quarantine & Lockouts (Bug Fix & Clean Layout)
         # -------------------------------------------------------------
-        st.markdown('<div class="soc-section-title">🔒 User Account Quarantine & Containment</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="soc-section-title">{SVG_ICONS["lock"]} User Account Quarantine & Containment</div>', unsafe_allow_html=True)
+        st.caption("Quarantine suspicious or compromised user accounts to immediately block them from authenticating (HTTP 401/403).")
 
-        users = db.query(User).options(desc(User.id)).all()
+        users = db.query(User).order_by(desc(User.id)).all()
         disabled_users = [u for u in users if u.status == "disabled"]
         active_users = [u for u in users if u.status == "active"]
 
-        st.write(f"**Quarantined / Disabled Accounts ({len(disabled_users)}):**")
-        if disabled_users:
-            dis_table_data = []
-            for dis_u in disabled_users:
-                dis_table_data.append({
-                    "User ID": dis_u.id,
-                    "Username": dis_u.username,
-                    "Email": dis_u.email,
-                    "Role": dis_u.role.name if dis_u.role else "user",
-                    "Status": "DISABLED"
-                })
-            st.dataframe(pd.DataFrame(dis_table_data), use_container_width=True, hide_index=True)
+        col_q1, col_q2 = st.columns([1, 1])
 
-            # Single Restore Selector (No button per row!)
-            r_col1, r_col2 = st.columns([3, 1])
-            with r_col1:
-                user_to_restore_label = st.selectbox(
-                    "Select Account to Restore",
-                    [f"{u.username} (ID: {u.id})" for u in disabled_users],
-                    key="sel_restore_user_account",
-                    label_visibility="collapsed"
-                )
-                user_to_restore_id = int(user_to_restore_label.split("ID: ")[1].rstrip(")"))
-            with r_col2:
-                if st.button("🔓 Restore Selected Account", use_container_width=True):
-                    handle_restore_user_action(user_to_restore_id)
-                    st.rerun()
-        else:
-            st.info("No accounts are currently quarantined or disabled.")
-
-        with st.expander("🔒 Manually Quarantine an Active Account"):
-            with st.form("manual_user_quarantine_form"):
+        # Left Column: Quarantine Active Account
+        with col_q1:
+            with st.container(border=True):
+                st.markdown(f"**{SVG_ICONS['lock']} Quarantine Active Account**", unsafe_allow_html=True)
+                st.caption("Select an active account to immediately suspend access:")
                 user_choices = {f"{u.username} ({u.email}) [Role: {u.role.name if u.role else 'user'}]": u.id for u in active_users}
                 if user_choices:
-                    selected_label = st.selectbox("Select Active User to Lock", list(user_choices.keys()))
-                    lock_reason = st.text_input("Lockout Justification", value="Compromised credentials suspected during active attack")
-                    submit_user_lock = st.form_submit_button("🔒 Suspend User Account")
-                    if submit_user_lock:
+                    selected_label = st.selectbox("Select Active User Account", list(user_choices.keys()), key="sel_user_to_quarantine")
+                    lock_reason = st.text_input("Lockout Justification", value="Compromised credentials suspected during active attack", key="input_user_quarantine_reason")
+                    if st.button("Suspend User Account (Quarantine)", type="primary", use_container_width=True, key="btn_execute_user_quarantine"):
                         target_id = user_choices[selected_label]
                         handle_quarantine_user_action(target_id)
                         st.rerun()
                 else:
-                    st.info("No active users available to lock.")
+                    st.info("No active users available to quarantine.")
+
+        # Right Column: Currently Quarantined Accounts & Restore
+        with col_q2:
+            with st.container(border=True):
+                st.markdown(f"**{SVG_ICONS['unlock']} Quarantined Accounts ({len(disabled_users)})**", unsafe_allow_html=True)
+                if disabled_users:
+                    dis_table_data = []
+                    for dis_u in disabled_users:
+                        dis_table_data.append({
+                            "ID": dis_u.id,
+                            "Username": dis_u.username,
+                            "Email": dis_u.email,
+                            "Role": dis_u.role.name if dis_u.role else "user",
+                            "Status": "DISABLED"
+                        })
+                    st.dataframe(pd.DataFrame(dis_table_data), use_container_width=True, hide_index=True)
+
+                    r_col_sel, r_col_btn = st.columns([2.5, 1.5])
+                    with r_col_sel:
+                        user_to_restore_label = st.selectbox(
+                            "Select Account to Restore",
+                            [f"{u.username} (ID: {u.id})" for u in disabled_users],
+                            key="sel_restore_user_account",
+                            label_visibility="collapsed"
+                        )
+                        user_to_restore_id = int(user_to_restore_label.split("ID: ")[1].rstrip(")"))
+                    with r_col_btn:
+                        if st.button("Restore Account", use_container_width=True, key="btn_execute_user_restore"):
+                            handle_restore_user_action(user_to_restore_id)
+                            st.rerun()
+                else:
+                    st.info("No accounts are currently quarantined or disabled.")
 
         st.markdown("---")
 
         # -------------------------------------------------------------
         # Section 4: Remediation Actions Audit Trail
         # -------------------------------------------------------------
-        st.markdown('<div class="soc-section-title">📜 Remediation Actions Audit Log</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="soc-section-title">{SVG_ICONS["file"]} Remediation Actions Audit Log</div>', unsafe_allow_html=True)
         remediation_logs = (
             db.query(AuditLog)
             .filter(AuditLog.action.in_([
@@ -1261,8 +1316,8 @@ elif active_tab == "⚔️ Active Defense & Remediation":
 # =============================================================================
 # TAB 4: AUDIT LOG EXPLORER
 # =============================================================================
-elif active_tab == "📜 Audit Log Explorer":
-    st.markdown('<div class="soc-section-title">📜 Immutable Security Audit Trail & Forensics</div>', unsafe_allow_html=True)
+elif active_tab == "Audit Log Explorer":
+    st.markdown(f'<div class="soc-section-title">{SVG_ICONS["file"]} Immutable Security Audit Trail & Forensics</div>', unsafe_allow_html=True)
     st.caption("Search, filter, and inspect tamper-evident audit records across authentication, authorization, and administrative operations.")
 
     db = get_db_session()
@@ -1279,7 +1334,7 @@ elif active_tab == "📜 Audit Log Explorer":
         # Advanced Filter Inputs
         col_f1, col_f2, col_f3, col_f4 = st.columns([2, 1.2, 1, 1])
         with col_f1:
-            search_text = st.text_input("🔍 Search forensic details, endpoints, actions", placeholder="e.g. login, /admin/users, invalid password...")
+            search_text = st.text_input("Search forensic details, endpoints, actions", placeholder="e.g. login, /admin/users, invalid password...")
         with col_f2:
             ip_filter = st.text_input("Filter IP Address", placeholder="e.g. 10.0.0.15")
         with col_f3:
@@ -1336,7 +1391,7 @@ elif active_tab == "📜 Audit Log Explorer":
 
             csv_logs = df_logs.to_csv(index=False).encode('utf-8')
             st.download_button(
-                label="📥 Export Audit Trail (CSV)",
+                label="Export Audit Trail (CSV)",
                 data=csv_logs,
                 file_name=f"authshield_audit_logs_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
                 mime="text/csv"
@@ -1350,11 +1405,11 @@ elif active_tab == "📜 Audit Log Explorer":
 # =============================================================================
 # TAB 5: ATTACK SIMULATION LAB & REAL-WORLD TRAFFIC GENERATOR
 # =============================================================================
-elif active_tab == "⚡ Attack Simulation Lab":
-    st.markdown('<div class="soc-section-title">⚡ Attack Simulation & Traffic Cockpit</div>', unsafe_allow_html=True)
+elif active_tab == "Attack Simulation Lab":
+    st.markdown(f'<div class="soc-section-title">{SVG_ICONS["crosshair"]} Attack Simulation & Traffic Cockpit</div>', unsafe_allow_html=True)
 
     client, is_live_server = get_api_client()
-    server_mode_label = "🌐 Live REST API (127.0.0.1:8000)" if is_live_server else "⚙️ In-Process FastAPI Engine"
+    server_mode_label = "Live REST API (127.0.0.1:8000)" if is_live_server else "In-Process FastAPI Engine"
     st.caption(f"Simulator Target: **{server_mode_label}** • Demonstrates sliding-window detection rules, alert creation, and audit logging.")
 
     sim_col1, sim_col2 = st.columns([3, 2])
@@ -1362,7 +1417,7 @@ elif active_tab == "⚡ Attack Simulation Lab":
     # Left Column: Unified Threat Scenario Launcher
     with sim_col1:
         with st.container(border=True):
-            st.markdown("#### 🎯 Targeted Threat Scenario Launcher")
+            st.markdown(f"#### {SVG_ICONS['crosshair']} Targeted Threat Scenario Launcher", unsafe_allow_html=True)
             scenario_choice = st.selectbox(
                 "Select Attack Scenario to Simulate",
                 [
@@ -1377,17 +1432,17 @@ elif active_tab == "⚡ Attack Simulation Lab":
 
             # Concise scenario expectations
             if "Scenario A" in scenario_choice:
-                st.caption("⚡ Sends 5 rapid failed logins from a rotating IP to verify threshold triggering of `BRUTE_FORCE_LOGIN`.")
+                st.caption("Sends 5 rapid failed logins from a rotating IP to verify threshold triggering of BRUTE_FORCE_LOGIN.")
             elif "Scenario B" in scenario_choice:
-                st.caption("🛡️ Sends 2 typo failed logins from a rotating IP (threshold is 5) to verify no false positives are generated.")
+                st.caption("Sends 2 typo failed logins from a rotating IP (threshold is 5) to verify no false positives are generated.")
             elif "Scenario C" in scenario_choice:
-                st.caption("🚫 Authenticates as standard user and accesses admin API 3 times to trigger `REPEATED_UNAUTHORIZED_ACCESS`.")
+                st.caption("Authenticates as standard user and accesses admin API 3 times to trigger REPEATED_UNAUTHORIZED_ACCESS.")
             elif "Scenario D" in scenario_choice:
-                st.caption("👑 Promotes a newly created user to `admin` role to trigger `PRIVILEGE_CHANGE` alert.")
+                st.caption("Promotes a newly created user to admin role to trigger PRIVILEGE_CHANGE alert.")
             elif "Scenario E" in scenario_choice:
-                st.caption("🔒 Attempts login against deactivated account (`disabled@authshield.io`) to trigger `LOGIN_ATTEMPT_DISABLED_ACCOUNT`.")
+                st.caption("Attempts login against deactivated account (disabled@authshield.io) to trigger LOGIN_ATTEMPT_DISABLED_ACCOUNT.")
 
-            if st.button("🚀 Execute Selected Scenario", type="primary", use_container_width=True):
+            if st.button("Execute Selected Scenario", type="primary", use_container_width=True):
                 if "Scenario A" in scenario_choice:
                     sim_ip = f"10.0.0.{random.randint(20, 250)}"
                     new_logs = [f"[{datetime.now().strftime('%H:%M:%S')}] [ATTACK START] Firing 5 failed logins from {sim_ip}"]
@@ -1396,7 +1451,7 @@ elif active_tab == "⚡ Attack Simulation Lab":
                         new_logs.append(f"[{datetime.now().strftime('%H:%M:%S')}] POST /auth/login (#{i+1}) -> HTTP {resp.status_code} [IP: {sim_ip}]")
                     new_logs.append(f"[{datetime.now().strftime('%H:%M:%S')}] [ALERT GENERATED] BRUTE_FORCE_LOGIN (HIGH) created for {sim_ip}")
                     st.session_state.sim_logs.extend(new_logs)
-                    st.session_state.flash_message = f"🚨 Brute-Force scenario executed from {sim_ip}! High severity alert created in Triage."
+                    st.session_state.flash_message = f"Brute-Force scenario executed from {sim_ip}. High severity alert created in Triage."
                     st.session_state.flash_type = "warning"
                     st.rerun()
 
@@ -1408,7 +1463,7 @@ elif active_tab == "⚡ Attack Simulation Lab":
                         new_logs.append(f"[{datetime.now().strftime('%H:%M:%S')}] POST /auth/login (#{i+1}) -> HTTP {resp.status_code} [IP: {sim_ip}]")
                     new_logs.append(f"[{datetime.now().strftime('%H:%M:%S')}] [SAFE VERDICT] Sub-threshold noise recorded: No alert triggered (Expected).")
                     st.session_state.sim_logs.extend(new_logs)
-                    st.session_state.flash_message = "✅ Sub-threshold test passed: Safe baseline verified (no alert generated)."
+                    st.session_state.flash_message = "Sub-threshold test passed: Safe baseline verified (no alert generated)."
                     st.session_state.flash_type = "success"
                     st.rerun()
 
@@ -1422,7 +1477,7 @@ elif active_tab == "⚡ Attack Simulation Lab":
                         new_logs.append(f"[{datetime.now().strftime('%H:%M:%S')}] GET /users (#{i+1}) -> HTTP {resp.status_code} Forbidden [IP: {sim_ip}]")
                     new_logs.append(f"[{datetime.now().strftime('%H:%M:%S')}] [ALERT GENERATED] REPEATED_UNAUTHORIZED_ACCESS (MEDIUM) created")
                     st.session_state.sim_logs.extend(new_logs)
-                    st.session_state.flash_message = "🚨 Repeated Unauthorized Access executed! Medium alert created in Triage."
+                    st.session_state.flash_message = "Repeated Unauthorized Access executed. Medium alert created in Triage."
                     st.session_state.flash_type = "warning"
                     st.rerun()
 
@@ -1441,7 +1496,7 @@ elif active_tab == "⚡ Attack Simulation Lab":
                     new_logs.append(f"[{datetime.now().strftime('%H:%M:%S')}] PATCH /users/{target_id}/role -> HTTP {patch_resp.status_code} (Promoted user to admin)")
                     new_logs.append(f"[{datetime.now().strftime('%H:%M:%S')}] [ALERT GENERATED] PRIVILEGE_CHANGE (HIGH) created")
                     st.session_state.sim_logs.extend(new_logs)
-                    st.session_state.flash_message = "🚨 Privilege Escalation executed! High severity alert created in Triage."
+                    st.session_state.flash_message = "Privilege Escalation executed. High severity alert created in Triage."
                     st.session_state.flash_type = "warning"
                     st.rerun()
 
@@ -1456,29 +1511,29 @@ elif active_tab == "⚡ Attack Simulation Lab":
                     new_logs.append(f"[{datetime.now().strftime('%H:%M:%S')}] POST /auth/login -> HTTP {resp.status_code}: {resp.json().get('detail')}")
                     new_logs.append(f"[{datetime.now().strftime('%H:%M:%S')}] [ALERT GENERATED] LOGIN_ATTEMPT_DISABLED_ACCOUNT (HIGH) created")
                     st.session_state.sim_logs.extend(new_logs)
-                    st.session_state.flash_message = f"🚨 Disabled account login attempt executed from {sim_ip}! High alert created in Triage."
+                    st.session_state.flash_message = f"Disabled account login attempt executed from {sim_ip}. High alert created in Triage."
                     st.session_state.flash_type = "warning"
                     st.rerun()
 
     # Right Column: Live Telemetry & Traffic Injections
     with sim_col2:
         with st.container(border=True):
-            st.markdown("#### 🌐 Live Telemetry Generator")
+            st.markdown(f"#### {SVG_ICONS['activity']} Live Telemetry Generator", unsafe_allow_html=True)
             st.caption("Generate realistic corporate traffic bursts or inject attack noise.")
 
-            if st.button("⚡ Inject 5 Legitimate User Logins", use_container_width=True):
+            if st.button("Inject 5 Legitimate User Logins", use_container_width=True):
                 for _ in range(5):
                     inject_single_traffic_event()
-                st.session_state.flash_message = "Injected 5 legitimate authentication events into system!"
+                st.session_state.flash_message = "Injected 5 legitimate authentication events into system."
                 st.session_state.flash_type = "success"
                 st.rerun()
 
-            if st.button("💥 Inject Attack Burst (5 Failed Logins)", use_container_width=True):
+            if st.button("Inject Attack Burst (5 Failed Logins)", use_container_width=True):
                 burst_ip = f"185.220.{random.randint(10, 240)}.{random.randint(10, 240)}"
                 for b in range(5):
                     client.post("/auth/login", json={"email": "admin@authshield.io", "password": f"spray_{b}"}, headers={"X-Simulated-IP": burst_ip})
                 st.session_state.sim_logs.append(f"[{datetime.now().strftime('%H:%M:%S')}] [ATTACK BURST] 5 failed logins from {burst_ip} -> Generated BRUTE_FORCE_LOGIN!")
-                st.session_state.flash_message = f"Attack burst injected from {burst_ip}! Check Triage Queue."
+                st.session_state.flash_message = f"Attack burst injected from {burst_ip}. Check Triage Queue."
                 st.session_state.flash_type = "warning"
                 st.rerun()
 
@@ -1486,8 +1541,8 @@ elif active_tab == "⚡ Attack Simulation Lab":
     st.markdown("<div style='height: 0.5rem;'></div>", unsafe_allow_html=True)
     with st.container(border=True):
         t_col1, t_col2 = st.columns([4, 1])
-        t_col1.markdown("#### 💻 Simulator Event Log")
-        if t_col2.button("🧹 Clear Log", use_container_width=True):
+        t_col1.markdown(f"#### {SVG_ICONS['terminal']} Simulator Event Log", unsafe_allow_html=True)
+        if t_col2.button("Clear Log", use_container_width=True):
             st.session_state.sim_logs = []
             st.rerun()
 
