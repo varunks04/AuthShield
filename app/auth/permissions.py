@@ -36,6 +36,25 @@ def get_client_ip(request: Request) -> str:
     return "127.0.0.1"
 
 
+def verify_ip_not_blocked(request: Request, db: Session = Depends(get_db)):
+    """Verifies that the client IP address is not on the active quarantine blocklist."""
+    client_ip = get_client_ip(request)
+    from app.services.blocklist_service import BlocklistService
+    if BlocklistService.is_ip_blocked(db, client_ip):
+        AuditService.log_event(
+            db=db,
+            action="BLOCKED_IP_REJECTED",
+            endpoint=request.url.path,
+            status="DENIED",
+            ip_address=client_ip,
+            details=f"Connection rejected: Source IP '{client_ip}' is actively quarantined"
+        )
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Access denied: Source IP '{client_ip}' has been quarantined by AuthShield security policy."
+        )
+
+
 def get_current_user(
     request: Request,
     token: Optional[str] = Depends(oauth2_scheme),
@@ -44,6 +63,7 @@ def get_current_user(
     """
     Validates JWT token, extracts user identity, and verifies account active status.
     """
+    verify_ip_not_blocked(request, db)
     ip_address = get_client_ip(request)
     endpoint = request.url.path
 

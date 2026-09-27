@@ -11,11 +11,11 @@ from app.schemas.auth import UserRegisterRequest, UserLoginRequest, TokenRespons
 from app.schemas.user import UserResponse
 from app.auth.password import hash_password, verify_password
 from app.auth.jwt import create_access_token
-from app.auth.permissions import get_client_ip
+from app.auth.permissions import get_client_ip, verify_ip_not_blocked
 from app.services.audit_service import AuditService
 from app.detection.engine import DetectionEngine
 
-router = APIRouter(prefix="/auth", tags=["Authentication"])
+router = APIRouter(prefix="/auth", tags=["Authentication"], dependencies=[Depends(verify_ip_not_blocked)])
 
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)

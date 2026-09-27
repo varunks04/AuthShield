@@ -5,6 +5,7 @@ from app.models.role import Role, Permission, role_permissions
 from app.models.user import User
 from app.models.audit import AuditLog
 from app.models.alert import SecurityAlert
+from app.models.blocklist import BlockedIP
 
 __all__ = [
     "TimestampMixin",
@@ -14,4 +15,5 @@ __all__ = [
     "User",
     "AuditLog",
     "SecurityAlert",
+    "BlockedIP",
 ]

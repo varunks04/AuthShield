@@ -6,8 +6,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 from app.config import settings
+from app.database.connection import SessionLocal
 from app.database.init_db import init_db
-from app.api import auth_router, users_router, audit_router, alerts_router
+from app.models.blocklist import BlockedIP
+from app.auth.permissions import get_client_ip
+from app.services.audit_service import AuditService
+from app.api import (
+    auth_router,
+    users_router,
+    audit_router,
+    alerts_router,
+    remediation_router,
+)
 
 
 @asynccontextmanager
@@ -23,7 +33,7 @@ app = FastAPI(
     description=(
         "Security-focused REST API and identity monitoring platform featuring JWT authentication, "
         "server-side Role-Based Access Control (RBAC), security audit logging, IP-aware request monitoring, "
-        "and rule-based suspicious activity detection."
+        "rule-based suspicious activity detection, and active threat containment."
     ),
     version="1.0.0",
     lifespan=lifespan
@@ -37,6 +47,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
 
 
 # Global Exception Handler to avoid leaking internal DB or system error details (PRD Section 24)
@@ -63,6 +75,7 @@ app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(audit_router)
 app.include_router(alerts_router)
+app.include_router(remediation_router)
 
 
 if __name__ == "__main__":

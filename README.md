@@ -17,6 +17,19 @@ Modern web applications frequently implement authentication but lack visibility 
 
 ---
 
+## 📚 Architectural & Operational Documentation Hub
+
+All detailed operational guides, product logic flows, and specifications are organized inside [`docs/`](docs/):
+
+| Document | File Path | Focus & Purpose |
+| :--- | :--- | :--- |
+| **Execution & Run Guide** | [`docs/RUN_GUIDE.md`](docs/RUN_GUIDE.md) | One-click launchers (`run_all.bat` / `.ps1` / `.sh`), service start orders, analyst workflows, cheat sheet & seed credentials |
+| **Real-World Logical & Life Flow** | [`docs/life_logical_flow.md`](docs/life_logical_flow.md) | Real-world human behaviors, operational supervision, unmonitored threat conditions, and situational realities |
+| **Project & Business Flow** | [`docs/project_business_flow.md`](docs/project_business_flow.md) | Product identity, business justification, stakeholder personas, data pipeline, and enterprise ROI |
+| **PRD & Technical Specifications** | [`docs/PRD.txt`](docs/PRD.txt) | Detailed engineering requirements, data models, threat detection rules, and security guidelines |
+
+---
+
 ## 🏛️ 2. System Architecture
 
 ```text
@@ -103,10 +116,34 @@ Permissions are enforced **strictly server-side**. Client-supplied roles or fron
 | `GET /audit-logs` | Inspect audit trail with filters | ❌ | ✅ | ✅ |
 | `GET /alerts` | View security alerts queue | ❌ | ✅ | ✅ |
 | `PATCH /alerts/{id}/status` | Alert triage (`INVESTIGATING`, `RESOLVED`, etc.) | ❌ | ✅ | ✅ |
+| `GET /remediation/blocked-ips` | List active quarantined IPs | ❌ | ✅ | ✅ |
+| `POST /remediation/block-ip` | Manually block IP from network | ❌ | ✅ | ✅ |
+| `POST /remediation/unblock-ip` | Release IP from quarantine | ❌ | ✅ | ✅ |
+| `POST /remediation/quarantine-user/{id}` | Suspend compromised account | ❌ | ✅ | ✅ |
+| `POST /remediation/restore-user/{id}` | Re-activate user account | ❌ | ❌ | ✅ |
 
 ---
 
-## 🚀 5. Quickstart & Installation
+## ⚡ 5. One-Click Multi-Terminal Launchers
+
+You can launch all services, simulations, and test suites in separate terminal windows in order with one command:
+
+- **Windows Command Prompt / Double-Click**:
+  ```cmd
+  run_all.bat
+  ```
+- **Windows PowerShell**:
+  ```powershell
+  .\run_all.ps1
+  ```
+- **Linux / macOS / Git Bash**:
+  ```bash
+  chmod +x run_all.sh && ./run_all.sh
+  ```
+
+---
+
+## 🚀 6. Manual Setup & Installation
 
 ### Prerequisites
 - Python 3.10+ (Fully tested on Python 3.14)
@@ -132,10 +169,10 @@ Permissions are enforced **strictly server-side**. Client-supplied roles or fron
 
 ---
 
-## 🧪 6. Automated Testing & Verification
+## 🧪 7. Automated Testing & Verification
 
 ### Run Pytest Suite
-Run the 25 comprehensive automated tests covering authentication, authorization, detection rules, and alert triage:
+Run the **29 comprehensive automated tests** covering authentication, authorization, detection rules, alert triage, manual threat containment, and RBAC remediation:
 ```bash
 python -m pytest -v
 ```
@@ -144,14 +181,18 @@ python -m pytest -v
 ```bash
 python -m pytest --cov=app tests/
 ```
-*(Demonstrates 90%+ code coverage across the entire application).*
+*(Demonstrates **91% code coverage** across all modules in the application).*
 
 ---
 
-## ⚡ 7. Reproducible Attack Simulation (Single Machine)
+## ⚡ 8. Reproducible Attack Simulation (Single Machine)
 
 You can simulate realistic multi-IP cyber attacks from a single computer using the automated simulation runner:
 ```bash
+# Run attack scenarios once and verify alerts:
+python scripts/simulate_attacks.py --once
+
+# Or run with continuous real-world traffic stream:
 python scripts/simulate_attacks.py
 ```
 
@@ -164,23 +205,30 @@ python scripts/simulate_attacks.py
 
 ---
 
-## 📊 8. Security Monitoring Dashboard
+## 📊 9. Security Operations Dashboard
 
-Launch the Streamlit SOC monitoring dashboard:
+Launch the streamlined Streamlit SOC monitoring dashboard:
 ```bash
 python -m streamlit run dashboard/app.py
 ```
 
 ### Dashboard Capabilities:
-1. **Overview & Metrics**: Live KPIs for total users, failed logins, active security events, open alerts, and high-severity issues.
-2. **Visualizations**: Alerts by severity, authentication outcomes (success vs. failure), and top suspicious source IPs.
-3. **Alert Triage Queue**: Investigate alerts and update statuses (`OPEN` $\rightarrow$ `INVESTIGATING` $\rightarrow$ `RESOLVED` / `FALSE_POSITIVE`).
-4. **Audit Log Explorer**: Search and filter security events by action, IP address, and status.
-5. **Attack Simulation Lab**: One-click attack triggers directly in the browser to demo detection in real-time.
+1. **Overview & Metrics**: Live KPIs for total users, failed logins, active security events, open alerts, and active quarantined entities.
+2. **Visualizations**: Altair charts for alerts by severity and authentication outcomes (success vs. failure vs. quarantined drops).
+3. **Alert Triage Queue**:
+   - **Centralized Incident Action Center**: Select an incident from a dropdown and apply triage or containment actions with 1 click — eliminates button-per-row clutter.
+   - Clean visual cards and compact table view with 1-click CSV export.
+4. **Active Defense & Threat Containment (Tab 3)**:
+   - **Forensic IP Inspector**: Look up any IP to examine total events, failed logins, and linked alerts with 1-click block/unblock.
+   - **Network Denylist Manager**: View quarantined IPs and release them via a single selector.
+   - **Account Quarantine Manager**: View and restore suspended accounts with a single selector.
+   - **Remediation Audit Trail**: Real-time log of all manual blocking and account lockout decisions.
+5. **Audit Log Explorer**: Search and filter security events by action, IP address, and status with CSV export.
+6. **Attack Simulation Lab**: One-click attack triggers directly in the browser to demo detection and containment in real-time.
 
 ---
 
-## 🌐 9. Running the REST API Server
+## 🌐 10. Running the REST API Server
 
 Start the FastAPI application with Uvicorn:
 ```bash

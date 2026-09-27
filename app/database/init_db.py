@@ -6,6 +6,7 @@ from app.models.role import Role, Permission
 from app.models.user import User
 from app.models.audit import AuditLog
 from app.models.alert import SecurityAlert
+from app.models.blocklist import BlockedIP
 from app.auth.password import hash_password
 
 
