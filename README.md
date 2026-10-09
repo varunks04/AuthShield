@@ -2,6 +2,18 @@
 
 > **A security-focused backend providing JWT authentication, server-side Role-Based Access Control (RBAC), security audit logging, IP-aware request monitoring, rule-based threat detection, alert triage workflows, and an interactive security operations dashboard.**
 
+<p align="left">
+  <a href="docs/VISUAL_TOUR.md">
+    <img src="https://img.shields.io/badge/📸%20Visual%20Product%20Tour-Explore%20Screenshots-0284c7?style=for-the-badge&logo=camera&logoColor=white" alt="Visual Product Tour" />
+  </a>
+  <a href="LOGICAL_FLOW.md">
+    <img src="https://img.shields.io/badge/🧬%20Complete%20Logical%20Flow-Deep%20Dive-10b981?style=for-the-badge&logo=gitbook&logoColor=white" alt="Logical Flow" />
+  </a>
+  <a href="docs/RUN_GUIDE.md">
+    <img src="https://img.shields.io/badge/🚀%20One--Click%20Launchers-Run%20Guide-f59e0b?style=for-the-badge&logo=powershell&logoColor=white" alt="Run Guide" />
+  </a>
+</p>
+
 ---
 
 ## 📌 1. Overview & Problem Solved
@@ -19,14 +31,16 @@ Modern web applications frequently implement authentication but lack visibility 
 
 ## 📚 Architectural & Operational Documentation Hub
 
-All detailed operational guides, product logic flows, and specifications are organized inside [`docs/`](docs/):
+All detailed operational guides, product logic flows, and specifications are organized inside [`docs/`](docs/) and the project root:
 
 | Document | File Path | Focus & Purpose |
 | :--- | :--- | :--- |
-| **Execution & Run Guide** | [`docs/RUN_GUIDE.md`](docs/RUN_GUIDE.md) | One-click launchers (`run_all.bat` / `.ps1` / `.sh`), service start orders, analyst workflows, cheat sheet & seed credentials |
-| **Real-World Logical & Life Flow** | [`docs/life_logical_flow.md`](docs/life_logical_flow.md) | Real-world human behaviors, operational supervision, unmonitored threat conditions, and situational realities |
-| **Project & Business Flow** | [`docs/project_business_flow.md`](docs/project_business_flow.md) | Product identity, business justification, stakeholder personas, data pipeline, and enterprise ROI |
-| **PRD & Technical Specifications** | [`docs/PRD.txt`](docs/PRD.txt) | Detailed engineering requirements, data models, threat detection rules, and security guidelines |
+| **📸 Visual Product Tour** | [`docs/VISUAL_TOUR.md`](docs/VISUAL_TOUR.md) | **Chronological step-by-step visual tour of all dashboard tabs, live AI telemetry, and containment actions** |
+| **🧬 Complete Logical Flow** | [`LOGICAL_FLOW.md`](LOGICAL_FLOW.md) | Comprehensive system architecture, exact mathematical formulas, threat detection rules, and Mermaid flowcharts |
+| **🚀 Execution & Run Guide** | [`docs/RUN_GUIDE.md`](docs/RUN_GUIDE.md) | One-click launchers (`run_all.bat` / `.ps1` / `.sh`), service start orders, analyst workflows, cheat sheet & seed credentials |
+| **🧬 Real-World Logical & Life Flow** | [`docs/life_logical_flow.md`](docs/life_logical_flow.md) | Real-world human behaviors, operational supervision, unmonitored threat conditions, and situational realities |
+| **💼 Project & Business Flow** | [`docs/project_business_flow.md`](docs/project_business_flow.md) | Product identity, business justification, stakeholder personas, data pipeline, and enterprise ROI |
+| **📋 PRD & Technical Specifications** | [`docs/PRD.txt`](docs/PRD.txt) | Detailed engineering requirements, data models, threat detection rules, and security guidelines |
 
 ---
 
@@ -212,19 +226,24 @@ Launch the streamlined Streamlit SOC monitoring dashboard:
 python -m streamlit run dashboard/app.py
 ```
 
-### Dashboard Capabilities:
-1. **Overview & Metrics**: Live KPIs for total users, failed logins, active security events, open alerts, and active quarantined entities.
-2. **Visualizations**: Altair charts for alerts by severity and authentication outcomes (success vs. failure vs. quarantined drops).
-3. **Alert Triage Queue**:
-   - **Centralized Incident Action Center**: Select an incident from a dropdown and apply triage or containment actions with 1 click — eliminates button-per-row clutter.
-   - Clean visual cards and compact table view with 1-click CSV export.
-4. **Active Defense & Threat Containment (Tab 3)**:
-   - **Forensic IP Inspector**: Look up any IP to examine total events, failed logins, and linked alerts with 1-click block/unblock.
-   - **Network Denylist Manager**: View quarantined IPs and release them via a single selector.
-   - **Account Quarantine Manager**: View and restore suspended accounts with a single selector.
-   - **Remediation Audit Trail**: Real-time log of all manual blocking and account lockout decisions.
-5. **Audit Log Explorer**: Search and filter security events by action, IP address, and status with CSV export.
-6. **Attack Simulation Lab**: One-click attack triggers directly in the browser to demo detection and containment in real-time.
+<p align="center">
+  <a href="docs/VISUAL_TOUR.md">
+    <img src="https://img.shields.io/badge/📸%20Take%20Guided%20Visual%20Tour-Explore%208%20Chronological%20Screenshots-0284c7?style=for-the-badge&logo=camera&logoColor=white" alt="Guided Visual Tour" />
+  </a>
+</p>
+
+[![AuthShield SOC Overview Dashboard](assets/screenshots/01_dashboard_overview_telemetry.png)](docs/VISUAL_TOUR.md)
+
+### 📸 Visual Product Tour Highlights ([`docs/VISUAL_TOUR.md`](docs/VISUAL_TOUR.md))
+Explore the complete chronological visual walkthrough across all operational stages:
+1. **[Live Overview & DEFCON 2 Telemetry](docs/VISUAL_TOUR.md#step-1-soc-overview--live-telemetry)**: Top header indicators, 4 Hero KPI cards, and Groq-powered CISO fleet posture synthesis.
+2. **[AI Strategic Recommendations](docs/VISUAL_TOUR.md#step-2-ai-ciso-threat-briefing--strategic-actions)**: Autonomous key findings (alert backlog, concentrated source activity) and remediation playbooks.
+3. **[Forensic Visualizations](docs/VISUAL_TOUR.md#step-3-forensic-visualizations--attack-dynamics)**: Altair charts for threat severity distribution, authentication dynamics, and top offender IP rankings.
+4. **[Alert Triage & Incident Cards](docs/VISUAL_TOUR.md#step-4-security-incident-investigation--triage-queue)**: Interactive cards with 1-click status transitions, IP quarantine, and deep-dive AI investigations.
+5. **[Multi-Model AI Orchestrator](docs/VISUAL_TOUR.md#step-5-ai-threat-intelligence--multi-tier-model-pipeline)**: 3-tier cascade status (Groq 827ms $\rightarrow$ OpenRouter 8386ms $\rightarrow$ Local SOC Heuristics 1ms).
+6. **[Active Threat Containment](docs/VISUAL_TOUR.md#step-6-active-defense--perimeter-containment-center)**: Forensic IP dossier inspector, network denylist, and compromised user account lockouts.
+7. **[Forensic Audit Trail Explorer](docs/VISUAL_TOUR.md#step-7-forensic-audit-trail--tamper-evident-logs)**: Preset filter pills, multi-parameter search, and CSV export for compliance reporting.
+8. **[Attack Simulation Cockpit](docs/VISUAL_TOUR.md#step-8-attack-simulation-lab--traffic-cockpit)**: 5 targeted IAM threat scenarios, live traffic generator, and terminal execution logs.
 
 ---
 

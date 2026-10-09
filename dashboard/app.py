@@ -45,6 +45,7 @@ from app.models.blocklist import BlockedIP
 from app.services.audit_service import AuditService
 from app.services.alert_service import AlertService
 from app.services.blocklist_service import BlocklistService
+from app.services.ai_insights_service import AIInsightsService
 from app.detection.engine import DetectionEngine
 
 # -----------------------------------------------------------------------------
@@ -74,7 +75,9 @@ SVG_ICONS = {
     "check": '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; display: inline-block; margin-right: 6px;"><polyline points="20 6 9 17 4 12"/></svg>',
     "refresh": '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; display: inline-block; margin-right: 6px;"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>',
     "chart": '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; display: inline-block; margin-right: 6px;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
-    "info": '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; display: inline-block; margin-right: 6px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+    "info": '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; display: inline-block; margin-right: 6px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+    "brain": '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; display: inline-block; margin-right: 6px;"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04z"/></svg>',
+    "sparkles": '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; display: inline-block; margin-right: 6px;"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>'
 }
 
 # -----------------------------------------------------------------------------
@@ -93,28 +96,104 @@ st.markdown("""
     }
 
     /* Core Deep Black Architecture */
-    .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
+    .stApp, [data-testid="stAppViewContainer"] {
         background-color: #060709 !important;
         color: #e2e8f0 !important;
     }
 
+    /* Eliminate Streamlit default navbar whitespace while keeping the sidebar toggle button intact */
+    header[data-testid="stHeader"], [data-testid="stHeader"] {
+        height: 0px !important;
+        min-height: 0px !important;
+        padding: 0px !important;
+        background: transparent !important;
+        border: none !important;
+        overflow: visible !important;
+        z-index: 9999 !important;
+    }
+
+    /* Streamlit 1.64+ puts the expand sidebar button inside stToolbar - keep container active at top-left */
+    [data-testid="stToolbar"] {
+        display: flex !important;
+        visibility: visible !important;
+        background: transparent !important;
+        height: auto !important;
+        min-height: 0px !important;
+        padding: 0px !important;
+        position: fixed !important;
+        top: 0.35rem !important;
+        left: 0.5rem !important;
+        z-index: 999999 !important;
+    }
+
+    /* Ensure the sidebar reopen/expand button (Streamlit 1.64+ and legacy) is ALWAYS visible, clickable, and styled */
+    [data-testid="stExpandSidebarButton"], [data-testid="stSidebarCollapsedControl"], [data-testid="collapsedControl"] {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: fixed !important;
+        top: 0.35rem !important;
+        left: 0.5rem !important;
+        z-index: 999999 !important;
+        background: #090c12 !important;
+        border: 1px solid #1e293b !important;
+        border-radius: 6px !important;
+        padding: 3px 8px !important;
+        color: #38bdf8 !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8) !important;
+        cursor: pointer !important;
+    }
+
+    [data-testid="stExpandSidebarButton"] button, [data-testid="stSidebarCollapsedControl"] button, [data-testid="collapsedControl"] button {
+        color: #38bdf8 !important;
+        background: transparent !important;
+        border: none !important;
+    }
+
+    [data-testid="stExpandSidebarButton"] svg, [data-testid="stSidebarCollapsedControl"] svg, [data-testid="collapsedControl"] svg,
+    [data-testid="stExpandSidebarButton"] span, [data-testid="stSidebarCollapsedControl"] span {
+        fill: #38bdf8 !important;
+        stroke: #38bdf8 !important;
+        color: #38bdf8 !important;
+    }
+
+    /* Hide only the top-right menu actions and decorations, NOT the expand button */
+    [data-testid="stToolbarActions"], #MainMenu, footer, [data-testid="stDecoration"] {
+        display: none !important;
+    }
+
+    /* Aggressively minimize top padding in main container so dashboard starts immediately */
+    .block-container, [data-testid="block-container"], [data-testid="stMainBlockContainer"], .main .block-container {
+        padding-top: 0.4rem !important;
+        padding-bottom: 2rem !important;
+        padding-left: 1.5rem !important;
+        padding-right: 1.5rem !important;
+        max-width: 100% !important;
+    }
+
+    /* Minimize top padding in sidebar */
     [data-testid="stSidebar"] {
         background-color: #040508 !important;
         border-right: 1px solid #141923 !important;
+    }
+
+    [data-testid="stSidebarContent"], [data-testid="stSidebarUserContent"], section[data-testid="stSidebar"] > div {
+        padding-top: 0.75rem !important;
     }
 
     [data-testid="stSidebar"] hr {
         border-color: #141923 !important;
     }
 
-    /* Professional SOC Command Header */
+    /* Professional SOC Command Header - Snug to top */
     .soc-header {
         background: #090c12;
         border: 1px solid #18202e;
         border-left: 3px solid #0284c7;
         border-radius: 6px;
-        padding: 1.1rem 1.5rem;
-        margin-bottom: 1.25rem;
+        padding: 0.85rem 1.25rem;
+        margin-top: 0 !important;
+        margin-bottom: 1rem;
         box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.7);
         display: flex;
         justify-content: space-between;
@@ -342,6 +421,14 @@ if "last_traffic_time" not in st.session_state:
     st.session_state.last_traffic_time = 0
 if "inspected_ip" not in st.session_state:
     st.session_state.inspected_ip = ""
+if "ai_posture_cache" not in st.session_state:
+    st.session_state.ai_posture_cache = None
+if "ai_alert_insights_cache" not in st.session_state:
+    st.session_state.ai_alert_insights_cache = {}
+if "ai_copilot_history" not in st.session_state:
+    st.session_state.ai_copilot_history = []
+if "ai_providers_cache" not in st.session_state:
+    st.session_state.ai_providers_cache = None
 
 
 # -----------------------------------------------------------------------------
@@ -599,6 +686,7 @@ with st.sidebar:
         [
             "Dashboard Overview",
             "Security Alerts Triage",
+            "AI Threat Intelligence & Copilot",
             "Active Defense & Remediation",
             "Audit Log Explorer",
             "Attack Simulation Lab"
@@ -704,6 +792,45 @@ if active_tab == "Dashboard Overview":
             <div class="kpi-caption">{disabled_users_count} disabled users • {blocked_attempts_count} drops</div>
         </div>
         """, unsafe_allow_html=True)
+
+    st.markdown("<div style='height: 0.5rem;'></div>", unsafe_allow_html=True)
+
+    # AI Fleet Threat Posture Briefing Card
+    with st.container(border=True):
+        st.markdown(f'<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.35rem;"><div style="font-size: 0.95rem; font-weight: 600; color: #f8fafc; font-family: \'JetBrains Mono\', monospace; display: flex; align-items: center;">{SVG_ICONS["brain"]} AI FLEET THREAT POSTURE BRIEFING</div><span style="font-size: 0.72rem; color: #38bdf8; font-family: \'JetBrains Mono\', monospace; font-weight: 600;">MULTI-MODEL ORCHESTRATOR</span></div>', unsafe_allow_html=True)
+        bcol1, bcol2 = st.columns([3, 1])
+        with bcol1:
+            st.caption("Autonomous CISO threat posture synthesis across active telemetry, brute-force indicators, and open security alerts.")
+        with bcol2:
+            if st.button("Generate Posture Briefing", key="btn_dash_ai_briefing", use_container_width=True):
+                with st.spinner("Synthesizing AI threat briefing..."):
+                    db_tmp = get_db_session()
+                    try:
+                        st.session_state.ai_posture_cache = AIInsightsService.analyze_soc_posture(db_tmp)
+                    finally:
+                        db_tmp.close()
+                st.rerun()
+
+        if st.session_state.ai_posture_cache is None:
+            db_tmp = get_db_session()
+            try:
+                st.session_state.ai_posture_cache = AIInsightsService.analyze_soc_posture(db_tmp)
+            finally:
+                db_tmp.close()
+
+        if st.session_state.ai_posture_cache:
+            p_cache = st.session_state.ai_posture_cache
+            st.markdown(f"**Orchestration Engine:** :green[{p_cache.provider} ({p_cache.model}) • {p_cache.latency_ms}ms] | **Fleet Threat Level:** :red[{p_cache.threat_level}]")
+            st.markdown(p_cache.briefing)
+            col_k1, col_k2 = st.columns(2)
+            with col_k1:
+                st.markdown("**Key Findings:**")
+                for kf in p_cache.key_findings:
+                    st.markdown(f"- {kf}")
+            with col_k2:
+                st.markdown("**Recommended Actions:**")
+                for ra in p_cache.recommended_actions:
+                    st.markdown(f"- {ra}")
 
     st.markdown("<div style='height: 0.5rem;'></div>", unsafe_allow_html=True)
 
@@ -861,28 +988,39 @@ if active_tab == "Dashboard Overview":
 
 
 # =============================================================================
-# TAB 2: SECURITY ALERTS TRIAGE QUEUE (WITH DIRECT REMEDIATION ACTIONS)
+# TAB 2: SECURITY ALERTS TRIAGE QUEUE (SIMPLIFIED & INTUITIVE)
 # =============================================================================
 elif active_tab == "Security Alerts Triage":
     st.markdown(f'<div class="soc-section-title">{SVG_ICONS["alert"]} Security Incident Investigation & Triage Queue</div>', unsafe_allow_html=True)
-    st.caption("Investigate triggered threat rules, analyze forensic evidence, and execute manual containment actions.")
+    st.caption("Review triggered threat rules, analyze forensic evidence, and execute 1-click active containment.")
 
     db = get_db_session()
     try:
-        # Search & Filter Toolbar
-        fcol1, fcol2, fcol3 = st.columns([2, 1, 1])
-        with fcol1:
-            search_query = st.text_input("Search alerts (by IP, Alert Type, or Description)", placeholder="e.g. 10.0.0.15, BRUTE_FORCE, admin...")
-        with fcol2:
-            status_filter = st.selectbox("Status", ["ALL", "OPEN", "INVESTIGATING", "RESOLVED", "FALSE_POSITIVE"])
-        with fcol3:
-            severity_filter = st.selectbox("Severity", ["ALL", "CRITICAL", "HIGH", "MEDIUM", "LOW"])
+        # Quick Triage Status Summary Counters
+        total_open_count = db.query(func.count(SecurityAlert.id)).filter(SecurityAlert.status == "OPEN").scalar() or 0
+        total_inv_count = db.query(func.count(SecurityAlert.id)).filter(SecurityAlert.status == "INVESTIGATING").scalar() or 0
+        total_res_count = db.query(func.count(SecurityAlert.id)).filter(SecurityAlert.status == "RESOLVED").scalar() or 0
+        total_crit_count = db.query(func.count(SecurityAlert.id)).filter(SecurityAlert.severity.in_(["CRITICAL", "HIGH"])).scalar() or 0
 
-        # View Mode Toggle & Bulk Actions
-        b_col_view, b_col_act1, b_col_act2 = st.columns([2, 1, 1])
-        with b_col_view:
-            view_mode = st.radio("Display Mode", ["Interactive Incident Cards", "Compact Data Table"], horizontal=True, label_visibility="collapsed")
-        with b_col_act1:
+        sc1, sc2, sc3, sc4 = st.columns(4)
+        sc1.metric("Open Backlog", f"{total_open_count}")
+        sc2.metric("In Investigation", f"{total_inv_count}")
+        sc3.metric("Resolved Incidents", f"{total_res_count}")
+        sc4.metric("High & Critical Threats", f"{total_crit_count}")
+
+        st.markdown("<div style='height: 0.25rem;'></div>", unsafe_allow_html=True)
+
+        # Simplified Clean Search & Filter Bar
+        fcol1, fcol2, fcol3, fcol4, fcol5 = st.columns([2.5, 1.2, 1.2, 1.2, 1.4])
+        with fcol1:
+            search_query = st.text_input("Search Incidents", placeholder="Search by IP, Alert Type, or details...", label_visibility="collapsed")
+        with fcol2:
+            status_filter = st.selectbox("Status", ["ALL", "OPEN", "INVESTIGATING", "RESOLVED", "FALSE_POSITIVE"], label_visibility="collapsed")
+        with fcol3:
+            severity_filter = st.selectbox("Severity", ["ALL", "CRITICAL", "HIGH", "MEDIUM", "LOW"], label_visibility="collapsed")
+        with fcol4:
+            view_mode = st.selectbox("View", ["Cards View", "Table View"], label_visibility="collapsed")
+        with fcol5:
             if st.button("Resolve All Open", use_container_width=True):
                 open_items = db.query(SecurityAlert).filter(SecurityAlert.status == "OPEN").all()
                 for item in open_items:
@@ -890,14 +1028,8 @@ elif active_tab == "Security Alerts Triage":
                 db.commit()
                 st.session_state.flash_message = f"Resolved {len(open_items)} open alerts."
                 st.rerun()
-        with b_col_act2:
-            if st.button("Dismiss False Positives", use_container_width=True):
-                db.query(SecurityAlert).filter(SecurityAlert.status == "FALSE_POSITIVE").delete()
-                db.commit()
-                st.session_state.flash_message = "Dismissed all false-positive alerts."
-                st.rerun()
 
-        # Query construction
+        # Query alerts
         query = db.query(SecurityAlert)
         if status_filter != "ALL":
             query = query.filter(SecurityAlert.status == status_filter)
@@ -913,140 +1045,408 @@ elif active_tab == "Security Alerts Triage":
 
         alerts = query.order_by(SecurityAlert.timestamp.desc()).all()
 
-        st.markdown(f"<div style='font-size: 0.85rem; color: #94a3b8; margin: 0.5rem 0 1rem 0;'>Showing <b>{len(alerts)}</b> incidents matching criteria</div>", unsafe_allow_html=True)
+        st.caption(f"Displaying **{len(alerts)}** matching security incident(s)")
 
         if not alerts:
-            st.info("No security alerts matching the selected filters.")
+            st.info("No security alerts matching the current filters.")
+        elif view_mode == "Table View":
+            # Compact Data Table View with CSV Export
+            alert_rows = []
+            for a in alerts:
+                is_blk = BlocklistService.is_ip_blocked(db, a.source_ip) if a.source_ip else False
+                alert_rows.append({
+                    "ID": a.id,
+                    "Timestamp": a.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+                    "Alert Type": str(a.alert_type or ""),
+                    "Severity": str(a.severity or ""),
+                    "Source IP": str(a.source_ip or ""),
+                    "IP Blocked?": "YES" if is_blk else "No",
+                    "Target User ID": str(a.user_id) if a.user_id is not None else "N/A",
+                    "Status": str(a.status or ""),
+                    "Description": str(a.description or "")
+                })
+            df_alerts = pd.DataFrame(alert_rows)
+            st.dataframe(df_alerts, use_container_width=True, hide_index=True)
+
+            csv_data = df_alerts.to_csv(index=False).encode('utf-8')
+            st.download_button(
+                label="Export Incidents (CSV)",
+                data=csv_data,
+                file_name=f"authshield_alerts_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                mime="text/csv"
+            )
         else:
-            # Clean Incident Action Center (Unified Action Controls - No Button per Row)
-            with st.expander("Incident Action Center (Triage & Containment)", expanded=True):
-                act_col1, act_col2, act_col3 = st.columns([2.5, 2, 1])
+            # Intuitive Incident Cards with Direct 1-Click Action Buttons
+            for a in alerts:
+                time_str = a.timestamp.strftime("%Y-%m-%d %H:%M:%S UTC")
+                is_ip_blocked = BlocklistService.is_ip_blocked(db, a.source_ip) if a.source_ip else False
+                target_user = db.query(User).filter(User.id == a.user_id).first() if a.user_id else None
+                is_user_disabled = (target_user.status == "disabled") if target_user else False
 
-                alert_map = {
-                    f"#{a.id} [{a.severity}] {a.alert_type} — IP: {a.source_ip or 'N/A'} ({a.status})": a
-                    for a in alerts
-                }
+                with st.container(border=True):
+                    # Header: ID, Type & Status/Severity Badges
+                    hcol1, hcol2 = st.columns([3, 2])
+                    with hcol1:
+                        st.markdown(f"**`INC-{a.id:04d}`** • **`{a.alert_type}`**")
+                    with hcol2:
+                        sev_pill = f":red-background[{a.severity}]" if a.severity in ["CRITICAL", "HIGH"] else (f":orange-background[{a.severity}]" if a.severity == "MEDIUM" else f":blue-background[{a.severity}]")
+                        badges_line = f"{sev_pill} `{a.status}`"
+                        if is_ip_blocked:
+                            badges_line += " :red[**[QUARANTINED]**]"
+                        if is_user_disabled:
+                            badges_line += " :orange[**[DISABLED]**]"
+                        st.markdown(badges_line)
 
-                with act_col1:
-                    sel_label = st.selectbox("Select Incident to Action", list(alert_map.keys()), key="sel_triage_alert")
-                    sel_alert = alert_map[sel_label]
+                    # Context Row
+                    mcol1, mcol2, mcol3 = st.columns(3)
+                    mcol1.caption(f"Detected: `{time_str}`")
+                    mcol2.caption(f"Source IP: `{a.source_ip or 'N/A'}`")
+                    target_name = f"`{target_user.username}`" if target_user else ("`None`" if a.user_id is None else f"`ID: {a.user_id}`")
+                    mcol3.caption(f"Target Subject: {target_name}")
 
-                # Dynamic logical action options
-                action_options = [
-                    "Mark as INVESTIGATING",
-                    "Mark as RESOLVED",
-                    "Mark as FALSE POSITIVE",
-                    "Re-Open Incident (OPEN)"
-                ]
+                    # Forensic Evidence
+                    st.info(f"**Forensic Evidence:** {a.description or 'No additional details logged.'}")
 
-                sel_is_ip_blocked = BlocklistService.is_ip_blocked(db, sel_alert.source_ip) if sel_alert.source_ip else False
-                sel_u = db.query(User).filter(User.id == sel_alert.user_id).first() if sel_alert.user_id else None
-                sel_u_disabled = (sel_u.status == "disabled") if sel_u else False
+                    # Direct 1-Click Actions Bar
+                    act_cols = st.columns([1.2, 1.2, 1.4, 1.5])
+                    with act_cols[0]:
+                        if a.status == "OPEN":
+                            if st.button("Investigate", key=f"btn_stat_inv_{a.id}", use_container_width=True):
+                                handle_triage_action(a.id, "INVESTIGATING")
+                                st.rerun()
+                        elif a.status == "INVESTIGATING":
+                            if st.button("Mark Resolved", key=f"btn_stat_res_{a.id}", type="primary", use_container_width=True):
+                                handle_triage_action(a.id, "RESOLVED")
+                                st.rerun()
+                        else:
+                            if st.button("Re-open", key=f"btn_stat_open_{a.id}", use_container_width=True):
+                                handle_triage_action(a.id, "OPEN")
+                                st.rerun()
 
-                if sel_alert.source_ip:
-                    if sel_is_ip_blocked:
-                        action_options.append(f"Unblock IP ({sel_alert.source_ip})")
-                    else:
-                        action_options.append(f"Quarantine IP ({sel_alert.source_ip})")
+                    with act_cols[1]:
+                        if a.status != "RESOLVED":
+                            if st.button("Resolve", key=f"btn_quick_res_{a.id}", use_container_width=True):
+                                handle_triage_action(a.id, "RESOLVED")
+                                st.rerun()
+                        else:
+                            if st.button("False Positive", key=f"btn_stat_fp_{a.id}", use_container_width=True):
+                                handle_triage_action(a.id, "FALSE_POSITIVE")
+                                st.rerun()
 
-                if sel_u:
-                    if sel_u_disabled:
-                        action_options.append(f"Restore Account ({sel_u.username})")
-                    else:
-                        action_options.append(f"Quarantine Account ({sel_u.username})")
+                    with act_cols[2]:
+                        if a.source_ip:
+                            if not is_ip_blocked:
+                                if st.button(f"Quarantine IP", key=f"btn_act_blk_{a.id}", use_container_width=True):
+                                    handle_block_ip_action(a.source_ip, f"Quarantined from Alert #{a.id} ({a.alert_type})")
+                                    st.rerun()
+                            else:
+                                if st.button(f"Release IP", key=f"btn_act_unblk_{a.id}", use_container_width=True):
+                                    handle_unblock_ip_action(a.source_ip)
+                                    st.rerun()
 
-                with act_col2:
-                    sel_action = st.selectbox("Action to Execute", action_options, key="sel_triage_action")
+                    with act_cols[3]:
+                        if st.button("AI Deep Dive", key=f"btn_ai_triage_{a.id}", use_container_width=True):
+                            with st.spinner("Analyzing incident telemetry with AI orchestrator..."):
+                                st.session_state.ai_alert_insights_cache[a.id] = AIInsightsService.analyze_alert(db, a.id)
+                            st.rerun()
 
-                with act_col3:
-                    st.markdown("<div style='height: 1.7rem;'></div>", unsafe_allow_html=True)
-                    if st.button("Apply Action", type="primary", use_container_width=True):
-                        if "INVESTIGATING" in sel_action:
-                            handle_triage_action(sel_alert.id, "INVESTIGATING")
-                        elif "RESOLVED" in sel_action:
-                            handle_triage_action(sel_alert.id, "RESOLVED")
-                        elif "FALSE POSITIVE" in sel_action:
-                            handle_triage_action(sel_alert.id, "FALSE_POSITIVE")
-                        elif "OPEN" in sel_action:
-                            handle_triage_action(sel_alert.id, "OPEN")
-                        elif "Quarantine IP" in sel_action:
-                            handle_block_ip_action(sel_alert.source_ip, f"Manual quarantine from Alert #{sel_alert.id} ({sel_alert.alert_type})")
-                        elif "Unblock IP" in sel_action:
-                            handle_unblock_ip_action(sel_alert.source_ip)
-                        elif "Quarantine Account" in sel_action and sel_u:
-                            handle_quarantine_user_action(sel_u.id)
-                        elif "Restore Account" in sel_action and sel_u:
-                            handle_restore_user_action(sel_u.id)
-                        st.rerun()
-
-            st.markdown("<div style='height: 0.5rem;'></div>", unsafe_allow_html=True)
-
-            if view_mode == "Interactive Incident Cards":
-                # Render Clean Native Streamlit Cards (Guaranteed Flawless UI Rendering)
-                for a in alerts:
-                    time_str = a.timestamp.strftime("%Y-%m-%d %H:%M:%S UTC")
-                    is_ip_blocked = BlocklistService.is_ip_blocked(db, a.source_ip) if a.source_ip else False
-                    target_user = db.query(User).filter(User.id == a.user_id).first() if a.user_id else None
-                    is_user_disabled = (target_user.status == "disabled") if target_user else False
-
-                    with st.container(border=True):
-                        # Top row: Incident ID & Title + Status & Severity Badges
-                        hcol1, hcol2 = st.columns([3, 2])
-                        with hcol1:
-                            st.markdown(f"**`INC-{a.id:04d}`** • **`{a.alert_type}`**")
-                        with hcol2:
-                            sev_pill = f":red-background[{a.severity}]" if a.severity in ["CRITICAL", "HIGH"] else (f":orange-background[{a.severity}]" if a.severity == "MEDIUM" else f":blue-background[{a.severity}]")
-                            status_pill = f"`{a.status}`"
-                            badges_line = f"{sev_pill} {status_pill}"
-                            if is_ip_blocked:
-                                badges_line += " :red[**[IP QUARANTINED]**]"
-                            if is_user_disabled:
-                                badges_line += " :orange[**[ACCOUNT DISABLED]**]"
-                            st.markdown(badges_line)
-
-                        # Metadata row
-                        mcol1, mcol2, mcol3 = st.columns(3)
-                        mcol1.caption(f"Detected: `{time_str}`")
-                        mcol2.caption(f"Source IP: `{a.source_ip or 'N/A'}`")
-                        target_name = f"`{target_user.username}` (ID: {a.user_id})" if target_user else (f"`ID: {a.user_id}`" if a.user_id is not None else "`N/A`")
-                        mcol3.caption(f"Target Subject: {target_name}")
-
-                        # Forensic Evidence box
-                        st.info(f"**Forensic Evidence:** {a.description or 'No additional details logged.'}")
-
-            else:
-                # Compact Data Table View with Export
-                alert_rows = []
-                for a in alerts:
-                    is_blk = BlocklistService.is_ip_blocked(db, a.source_ip) if a.source_ip else False
-                    alert_rows.append({
-                        "ID": a.id,
-                        "Timestamp": a.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
-                        "Alert Type": str(a.alert_type or ""),
-                        "Severity": str(a.severity or ""),
-                        "Source IP": str(a.source_ip or ""),
-                        "IP Blocked?": "YES" if is_blk else "No",
-                        "Target User ID": str(a.user_id) if a.user_id is not None else "N/A",
-                        "Status": str(a.status or ""),
-                        "Description": str(a.description or "")
-                    })
-                df_alerts = pd.DataFrame(alert_rows)
-                st.dataframe(df_alerts, use_container_width=True, hide_index=True)
-
-                csv_data = df_alerts.to_csv(index=False).encode('utf-8')
-                st.download_button(
-                    label="Export Filtered Alerts (CSV)",
-                    data=csv_data,
-                    file_name=f"authshield_alerts_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                    mime="text/csv"
-                )
+                    # AI Investigation Insight Display (Inside Card)
+                    if a.id in st.session_state.ai_alert_insights_cache:
+                        ai_res = st.session_state.ai_alert_insights_cache[a.id]
+                        with st.container(border=True):
+                            st.markdown(f'<div style="font-size: 0.85rem; font-weight: 600; color: #38bdf8; font-family: \'JetBrains Mono\', monospace; display: flex; align-items: center;">{SVG_ICONS["brain"]} AI TRIAGE REPORT & REMEDIATION</div>', unsafe_allow_html=True)
+                            p_tag = f":green[{ai_res.provider} ({ai_res.model}) • {ai_res.latency_ms}ms]"
+                            if ai_res.fallback_occurred:
+                                p_tag += " :orange[*(Failover Activated)*]"
+                            st.markdown(f"**Orchestrated Engine:** {p_tag} | **Risk Level:** :red[{ai_res.risk_level}]")
+                            st.markdown(f"**Summary:** {ai_res.summary}")
+                            if ai_res.mitre_attack:
+                                st.markdown(f"**MITRE ATT&CK:** `{ai_res.mitre_attack.get('tactic')}` / `{ai_res.mitre_attack.get('technique')}`")
+                            if ai_res.immediate_actions:
+                                st.markdown("**Recommended Remediation Actions:**")
+                                for act in ai_res.immediate_actions:
+                                    st.markdown(f"- {act}")
 
     finally:
         db.close()
 
 
 # =============================================================================
-# TAB 3: ACTIVE DEFENSE & REMEDIATION CONSOLE
+# TAB: AI THREAT INTELLIGENCE & COPILOT (MULTI-MODEL ORCHESTRATION)
+# =============================================================================
+elif active_tab == "AI Threat Intelligence & Copilot":
+    st.markdown(f'<div class="soc-section-title">{SVG_ICONS["brain"]} AI Threat Intelligence & Multi-Model Orchestrator</div>', unsafe_allow_html=True)
+    st.caption("Autonomous IAM threat correlation, CISO posture synthesis, and threat mitigation playbooks with automated multi-tier model failover (Groq -> OpenRouter -> Deterministic Heuristics).")
+
+    db = get_db_session()
+    try:
+        # Multi-Model Pipeline Status Bar
+        with st.container(border=True):
+            st.markdown(f"**{SVG_ICONS['activity']} Multi-Tier Model Orchestration Pipeline Status**", unsafe_allow_html=True)
+            p_col1, p_col2, p_col3, p_col_act = st.columns([2, 2, 2, 1.5])
+
+            if st.session_state.ai_providers_cache is None:
+                st.session_state.ai_providers_cache = AIInsightsService.test_providers()
+
+            prov_map = {p.provider: p for p in st.session_state.ai_providers_cache}
+            groq_p = prov_map.get("Groq")
+            or_p = prov_map.get("OpenRouter")
+            heur_p = prov_map.get("Deterministic SOC Engine")
+
+            with p_col1:
+                g_stat = ":green[OPERATIONAL]" if (groq_p and groq_p.healthy) else (":orange[FAILOVER READY]" if (groq_p and groq_p.configured) else ":gray[NOT CONFIGURED]")
+                g_lat = f"• {groq_p.latency_ms}ms" if (groq_p and groq_p.latency_ms) else ""
+                st.markdown(f"**Tier 1: Groq** {g_stat}")
+                st.caption(f"Model: `qwen/qwen3.8-27b` {g_lat}")
+
+            with p_col2:
+                o_stat = ":green[OPERATIONAL]" if (or_p and or_p.healthy) else (":orange[FAILOVER READY]" if (or_p and or_p.configured) else ":gray[NOT CONFIGURED]")
+                o_lat = f"• {or_p.latency_ms}ms" if (or_p and or_p.latency_ms) else ""
+                st.markdown(f"**Tier 2: OpenRouter** {o_stat}")
+                st.caption(f"Model: `nvidia/nemotron-3.5-lightning:free` {o_lat}")
+
+            with p_col3:
+                st.markdown("**Tier 3: Local SOC Engine** :green[ACTIVE]")
+                st.caption("Deterministic Heuristic Rule Engine • 1ms")
+
+            with p_col_act:
+                if st.button("Ping AI Pipeline", use_container_width=True):
+                    with st.spinner("Pinging model endpoints..."):
+                        st.session_state.ai_providers_cache = AIInsightsService.test_providers()
+                    st.rerun()
+
+        st.markdown("<div style='height: 0.5rem;'></div>", unsafe_allow_html=True)
+
+        ai_subtab = st.radio(
+            "AI Console Modes",
+            [
+                "Fleet Posture Briefing (CISO Synthesis)",
+                "Incident Investigation & Remediation",
+                "Interactive SOC Cyber Copilot"
+            ],
+            horizontal=True
+        )
+
+        # SUB-TAB 1: Fleet Posture Briefing
+        if ai_subtab == "Fleet Posture Briefing (CISO Synthesis)":
+            col_b1, col_b2 = st.columns([3, 1])
+            with col_b1:
+                st.markdown("#### Autonomous Fleet Threat Assessment")
+                st.caption("Synthesizes live telemetry, open incident counts, top offender IPs, and authentication ratios into an executive CISO briefing.")
+            with col_b2:
+                if st.button("Generate Fresh Briefing", type="primary", use_container_width=True):
+                    with st.spinner("Orchestrating multi-model threat evaluation..."):
+                        st.session_state.ai_posture_cache = AIInsightsService.analyze_soc_posture(db)
+                    st.rerun()
+
+            if st.session_state.ai_posture_cache is None:
+                with st.spinner("Generating initial CISO posture briefing..."):
+                    st.session_state.ai_posture_cache = AIInsightsService.analyze_soc_posture(db)
+
+            posture = st.session_state.ai_posture_cache
+
+            f_badge = ":orange[*(Failover Activated)*]" if posture.fallback_occurred else ":green[*(Direct Route)*]"
+            st.markdown(f"""
+            <div style="background: #090c12; border: 1px solid #161c28; border-radius: 6px; padding: 0.75rem 1rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <span style="color: #64748b; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace;">ORCHESTRATED ENGINE:</span>
+                    <span style="color: #38bdf8; font-weight: 600; font-size: 0.85rem; margin-left: 6px;">{posture.provider} ({posture.model})</span>
+                    <span style="color: #10b981; font-size: 0.75rem; margin-left: 8px;">{posture.latency_ms}ms</span>
+                </div>
+                <div>
+                    <span style="color: #64748b; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace;">POSTURE THREAT LEVEL:</span>
+                    <span style="background: {'#ef4444' if posture.threat_level in ['CRITICAL', 'HIGH'] else '#f59e0b'}; color: #fff; font-weight: 700; font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; margin-left: 6px;">{posture.threat_level}</span>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            with st.container(border=True):
+                st.markdown("##### Executive Security Summary")
+                st.markdown(posture.briefing)
+
+            col_f1, col_f2 = st.columns(2)
+            with col_f1:
+                with st.container(border=True):
+                    st.markdown("##### Key Fleet Threat Findings")
+                    for kf in posture.key_findings:
+                        st.markdown(f"- {kf}")
+            with col_f2:
+                with st.container(border=True):
+                    st.markdown("##### Recommended Strategic Remediations")
+                    for ra in posture.recommended_actions:
+                        st.markdown(f"- {ra}")
+
+            with st.expander("Orchestration & Model Cascade Execution Trace"):
+                trace_rows = []
+                for a in posture.attempts:
+                    trace_rows.append({
+                        "Tier": a.provider,
+                        "Model": a.model,
+                        "Status": a.status,
+                        "Latency": f"{a.latency_ms}ms" if a.latency_ms else "N/A",
+                        "Error / Failover Reason": a.error or "None"
+                    })
+                st.dataframe(pd.DataFrame(trace_rows), use_container_width=True, hide_index=True)
+
+        # SUB-TAB 2: Incident Investigation & Remediation
+        elif ai_subtab == "Incident Investigation & Remediation":
+            st.markdown("#### Automated Incident Deep Dive & Remediation Playbook")
+            st.caption("Select any recorded security incident to trigger deep-dive threat attribution, MITRE ATT&CK correlation, and automated containment actions.")
+
+            all_alerts = db.query(SecurityAlert).order_by(SecurityAlert.timestamp.desc()).all()
+            if not all_alerts:
+                st.info("No security alerts found in database. Simulate attacks in Attack Simulation Lab to generate incidents.")
+            else:
+                alert_options = {
+                    f"INC-{a.id:04d} • [{a.severity}] {a.alert_type} — IP: {a.source_ip} ({a.status})": a.id
+                    for a in all_alerts
+                }
+                selected_alert_label = st.selectbox("Select Incident to Investigate", list(alert_options.keys()))
+                target_alert_id = alert_options[selected_alert_label]
+                sel_alert_obj = db.query(SecurityAlert).filter(SecurityAlert.id == target_alert_id).first()
+
+                inv_col1, inv_col2 = st.columns([3, 1])
+                with inv_col1:
+                    st.caption(f"Target Alert #{sel_alert_obj.id}: {sel_alert_obj.description}")
+                with inv_col2:
+                    if st.button("Run AI Investigation", type="primary", use_container_width=True):
+                        with st.spinner("Analyzing incident telemetry and correlated audit logs..."):
+                            st.session_state.ai_alert_insights_cache[target_alert_id] = AIInsightsService.analyze_alert(db, target_alert_id)
+                        st.rerun()
+
+                if target_alert_id not in st.session_state.ai_alert_insights_cache:
+                    with st.spinner("Analyzing incident telemetry..."):
+                        st.session_state.ai_alert_insights_cache[target_alert_id] = AIInsightsService.analyze_alert(db, target_alert_id)
+
+                incident_insight = st.session_state.ai_alert_insights_cache[target_alert_id]
+
+                st.markdown(f"""
+                <div style="background: #090c12; border: 1px solid #161c28; border-radius: 6px; padding: 0.75rem 1rem; margin: 0.75rem 0; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span style="color: #64748b; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace;">ORCHESTRATED ENGINE:</span>
+                        <span style="color: #38bdf8; font-weight: 600; font-size: 0.85rem; margin-left: 6px;">{incident_insight.provider} ({incident_insight.model})</span>
+                        <span style="color: #10b981; font-size: 0.75rem; margin-left: 8px;">{incident_insight.latency_ms}ms</span>
+                    </div>
+                    <div>
+                        <span style="color: #64748b; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace;">ESTIMATED RISK:</span>
+                        <span style="background: {'#ef4444' if incident_insight.risk_level in ['CRITICAL', 'HIGH'] else '#3b82f6'}; color: #fff; font-weight: 700; font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; margin-left: 6px;">{incident_insight.risk_level}</span>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+                c_inv1, c_inv2 = st.columns([1.5, 1])
+                with c_inv1:
+                    with st.container(border=True):
+                        st.markdown("##### Executive Incident Analysis")
+                        st.markdown(incident_insight.summary)
+                        if incident_insight.mitre_attack:
+                            st.markdown("---")
+                            st.markdown(f"**MITRE ATT&CK Tactic:** `{incident_insight.mitre_attack.get('tactic')}`")
+                            st.markdown(f"**MITRE ATT&CK Technique:** `{incident_insight.mitre_attack.get('technique')}`")
+
+                with c_inv2:
+                    with st.container(border=True):
+                        st.markdown("##### Prioritized Remediation Actions")
+                        for act in incident_insight.immediate_actions:
+                            st.markdown(f"- {act}")
+
+                        st.markdown("---")
+                        # 1-Click Containment Buttons
+                        is_curr_blocked = BlocklistService.is_ip_blocked(db, sel_alert_obj.source_ip) if sel_alert_obj.source_ip else False
+                        if sel_alert_obj.source_ip:
+                            if not is_curr_blocked:
+                                if st.button(f"Quarantine Source IP ({sel_alert_obj.source_ip})", type="secondary", use_container_width=True):
+                                    handle_block_ip_action(sel_alert_obj.source_ip, f"AI-recommended quarantine for Alert #{sel_alert_obj.id}")
+                                    st.rerun()
+                            else:
+                                st.caption(f":red[Source IP `{sel_alert_obj.source_ip}` is already quarantined.]")
+
+                        if sel_alert_obj.user_id:
+                            u_obj = db.query(User).filter(User.id == sel_alert_obj.user_id).first()
+                            if u_obj and u_obj.status == "active":
+                                if st.button(f"Quarantine Target User ({u_obj.username})", use_container_width=True):
+                                    handle_quarantine_user_action(u_obj.id)
+                                    st.rerun()
+
+                with st.expander("View Full Unstructured AI Report & Execution Cascade"):
+                    st.markdown(incident_insight.raw_content)
+                    st.markdown("---")
+                    st.markdown("**Multi-Model Attempt Cascade History:**")
+                    st.dataframe(pd.DataFrame([a.dict() for a in incident_insight.attempts]), use_container_width=True, hide_index=True)
+
+        # SUB-TAB 3: Interactive SOC Cyber Copilot
+        elif ai_subtab == "Interactive SOC Cyber Copilot":
+            st.markdown("#### Interactive SOC Cyber Copilot")
+            st.caption("Ask threat questions, analyze attack vectors, formulate firewall drop rules, or generate incident triage steps.")
+
+            st.markdown("**Quick Inquiries:**")
+            qcol1, qcol2, qcol3, qcol4 = st.columns(4)
+            quick_prompt = None
+            with qcol1:
+                if st.button("Mitigate Credential Stuffing", use_container_width=True):
+                    quick_prompt = "What is the recommended multi-tier mitigation strategy for credential stuffing targeting OAuth/JWT login endpoints?"
+            with qcol2:
+                if st.button("Generate iptables IP Drop Rule", use_container_width=True):
+                    quick_prompt = "Generate Linux iptables and UFW firewall drop rules for isolating a malicious CIDR subnet exhibiting brute force activity."
+            with qcol3:
+                if st.button("MITRE ATT&CK T1110 Guide", use_container_width=True):
+                    quick_prompt = "Explain MITRE ATT&CK Technique T1110 (Brute Force), sub-techniques, and detection data sources."
+            with qcol4:
+                if st.button("Audit RBAC Privilege Drift", use_container_width=True):
+                    quick_prompt = "How can a SOC team detect privilege drift or vertical privilege escalation in role-based JWT identity architectures?"
+
+            copilot_input = st.text_area(
+                "Enter your cyber defense inquiry or investigation question:",
+                value=quick_prompt if quick_prompt else "",
+                height=100,
+                placeholder="e.g., How should we contain repeat brute force attempts from an AWS EC2 IP range?"
+            )
+
+            open_alerts_list = db.query(SecurityAlert).order_by(SecurityAlert.timestamp.desc()).limit(15).all()
+            alert_ctx_options = {"None (General SOC Query)": None}
+            for a in open_alerts_list:
+                alert_ctx_options[f"INC-{a.id:04d} • {a.alert_type} ({a.source_ip})"] = a.id
+
+            sel_ctx_label = st.selectbox("Inject Incident Context (Optional):", list(alert_ctx_options.keys()))
+            sel_ctx_id = alert_ctx_options[sel_ctx_label]
+
+            if st.button("Ask Copilot", type="primary", use_container_width=True):
+                if not copilot_input.strip():
+                    st.warning("Please enter a question or inquiry for the Copilot.")
+                else:
+                    with st.spinner("Copilot analyzing inquiry with multi-model fallback..."):
+                        resp = AIInsightsService.ask_copilot(db, prompt=copilot_input.strip(), context_alert_id=sel_ctx_id)
+                        st.session_state.ai_copilot_history.insert(0, {
+                            "prompt": copilot_input.strip(),
+                            "response": resp.response,
+                            "provider": resp.provider,
+                            "model": resp.model,
+                            "latency_ms": resp.latency_ms,
+                            "fallback": resp.fallback_occurred,
+                            "time": datetime.now(timezone.utc).strftime("%H:%M:%S UTC")
+                        })
+                    st.rerun()
+
+            if st.session_state.ai_copilot_history:
+                st.markdown("---")
+                st.markdown("##### Copilot Response Feed")
+                for item in st.session_state.ai_copilot_history[:8]:
+                    with st.container(border=True):
+                        st.markdown(f"**Operator Inquiry** `[{item['time']}]`:")
+                        st.markdown(f"> *{item['prompt']}*")
+                        st.markdown("---")
+                        prov_tag = f":green[{item['provider']} ({item['model']}) • {item['latency_ms']}ms]"
+                        if item['fallback']:
+                            prov_tag += " :orange[*(Failover Activated)*]"
+                        st.markdown(f"**Copilot Advisory** ({prov_tag}):")
+                        st.markdown(item["response"])
+
+    finally:
+        db.close()
+
+
+# =============================================================================
+# TAB 4: ACTIVE DEFENSE & REMEDIATION CONSOLE
 # =============================================================================
 elif active_tab == "Active Defense & Remediation":
     st.markdown(f'<div class="soc-section-title">{SVG_ICONS["shield"]} Threat Remediation & Active Defense Center</div>', unsafe_allow_html=True)

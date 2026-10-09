@@ -17,6 +17,7 @@ from app.api import (
     audit_router,
     alerts_router,
     remediation_router,
+    insights_router,
 )
 
 
@@ -76,6 +77,7 @@ app.include_router(users_router)
 app.include_router(audit_router)
 app.include_router(alerts_router)
 app.include_router(remediation_router)
+app.include_router(insights_router)
 
 
 if __name__ == "__main__":
