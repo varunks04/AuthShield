@@ -5,6 +5,8 @@ __pycache__/
 
 # Environments & databases
 .env
+.env.*
+!.env.example
 authshield.db
 *.sqlite3
 

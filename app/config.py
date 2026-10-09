@@ -1,5 +1,6 @@
 """AuthShield Application Configuration."""
 
+from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
 
@@ -23,6 +24,10 @@ class Settings(BaseSettings):
 
     UNAUTHORIZED_ACCESS_THRESHOLD: int = 3
     UNAUTHORIZED_ACCESS_WINDOW_SECONDS: int = 300
+
+    # AI Threat Intelligence Settings
+    GROQ_API_KEY: Optional[str] = None
+    OPENROUTER_API_KEY: Optional[str] = None
 
     model_config = SettingsConfigDict(
         env_file=".env",
